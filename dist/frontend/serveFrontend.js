@@ -78,8 +78,24 @@ async function writeWebResponse(res, webResponse) {
         res.end();
     }
 }
+function registerFrontendMissingPage(app) {
+    app.get("/", (_req, res) => {
+        res.status(503).type("html").send(`<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Oasis CI</title></head>
+<body style="font-family:system-ui,sans-serif;max-width:40rem;margin:3rem auto;padding:0 1rem">
+<h1>Frontend build not deployed</h1>
+<p>The API is running, but the app bundle is missing on this server.</p>
+<p>On your machine run:</p>
+<pre style="background:#f4f4f5;padding:1rem;border-radius:8px">cd oasis-ci-server
+npm run build:deploy</pre>
+<p>Then upload the <code>app-dist/</code> folder next to <code>server.cjs</code> and restart Node.</p>
+<p>Or set <code>OASIS_CI_APP_ROOT</code> to the folder that contains <code>client/</code> and <code>server/</code>.</p>
+</body></html>`);
+    });
+}
 export function registerFrontend(app) {
     if (!appFrontendBuildExists()) {
+        registerFrontendMissingPage(app);
         return { enabled: false };
     }
     const { clientDir } = getAppDistPaths();

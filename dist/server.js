@@ -7,6 +7,10 @@ const app = createApp();
 app.listen(env.port, () => {
     console.log(`Oasis CI listening on http://localhost:${env.port}`);
     console.log(`Public base URL: ${env.publicBaseUrl}`);
-    console.log(describeFrontendBuild());
+    const frontendStatus = describeFrontendBuild();
+    console.log(frontendStatus);
+    if (frontendStatus.includes("not found")) {
+        console.warn("WARNING: GET / will not serve the app until app-dist/ is deployed.");
+    }
     console.log(`State store: ${getStoreMode()}`);
 });

@@ -81,7 +81,13 @@ async function ensureBootstrapAdmin() {
 
   const adminEmail = (process.env.BOOTSTRAP_ADMIN_EMAIL ?? "admin@oasis.local").trim().toLowerCase();
   const adminName = (process.env.BOOTSTRAP_ADMIN_NAME ?? "Oasis Admin").trim();
-  const adminPassword = process.env.BOOTSTRAP_ADMIN_PASSWORD ?? createRandomPassword();
+  const configuredPassword = process.env.BOOTSTRAP_ADMIN_PASSWORD?.trim();
+  const adminPassword = configuredPassword || createRandomPassword();
+  if (!adminPassword) {
+    throw new Error(
+      "BOOTSTRAP_ADMIN_PASSWORD is empty. Set a strong password in .env or remove the variable to auto-generate one.",
+    );
+  }
   const adminId = "user-admin-bootstrap";
   await db.query(
     `INSERT INTO users (id, name, email, role, status, title, company, verified_domains, password_hint, password_hash)

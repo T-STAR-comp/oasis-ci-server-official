@@ -18,6 +18,15 @@ function resolveAppRoot() {
 }
 export function getAppDistPaths() {
     const appRoot = resolveAppRoot();
+    // `npm run bundle:app` copies oasis-ci-app/dist → app-dist/{client,server}
+    if (fs.existsSync(path.join(appRoot, "client"))) {
+        return {
+            appRoot,
+            clientDir: path.join(appRoot, "client"),
+            serverEntry: path.join(appRoot, "server/server.js"),
+        };
+    }
+    // Monorepo: oasis-ci-app/dist/{client,server}
     const distRoot = appRoot.endsWith(`${path.sep}dist`) ? appRoot : path.join(appRoot, "dist");
     return {
         appRoot,

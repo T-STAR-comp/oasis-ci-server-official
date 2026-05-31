@@ -1,4 +1,9 @@
-import "dotenv/config";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import dotenv from "dotenv";
+
+const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+dotenv.config({ path: path.join(packageRoot, ".env") });
 
 const port = Number(process.env.PORT ?? 4000);
 const nodeEnv = process.env.NODE_ENV ?? "development";
