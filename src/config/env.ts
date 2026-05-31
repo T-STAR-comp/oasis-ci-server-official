@@ -1,9 +1,20 @@
 import "dotenv/config";
 
+const port = Number(process.env.PORT ?? 4000);
+const nodeEnv = process.env.NODE_ENV ?? "development";
+
+const defaultPublicBase =
+  nodeEnv === "production" ? "https://oasisafrica.xyz" : `http://localhost:${port}`;
+
+const publicBaseUrl = (process.env.PUBLIC_BASE_URL ?? defaultPublicBase).replace(/\/$/, "");
+
 export const env = {
-  port: Number(process.env.PORT ?? 4000),
-  nodeEnv: process.env.NODE_ENV ?? "development",
-  clientOrigin: process.env.CLIENT_ORIGIN ?? "http://localhost:5173",
+  port,
+  nodeEnv,
+  publicBaseUrl,
+  clientOrigin:
+    process.env.CLIENT_ORIGIN ??
+    (nodeEnv === "production" ? publicBaseUrl : "http://localhost:5173"),
   sessionSecret:
     process.env.SESSION_SECRET ?? "dev-only-change-this-secret-before-production-use",
   mysql: {

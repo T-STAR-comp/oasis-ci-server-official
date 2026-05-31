@@ -13,6 +13,7 @@ import { submissionsRouter } from "./routes/submissions.routes.js";
 import { usersRouter } from "./routes/users.routes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { registerSecurityMiddleware } from "./middleware/security.js";
+import { registerFrontend } from "./frontend/serveFrontend.js";
 
 export function createApp() {
   const app = express();
@@ -31,6 +32,8 @@ export function createApp() {
   app.use(adminRouter);
   app.use(notificationsRouter);
   app.use(policiesRouter);
+
+  registerFrontend(app);
 
   app.use(errorHandler);
 

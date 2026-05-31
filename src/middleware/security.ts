@@ -14,7 +14,7 @@ export function registerSecurityMiddleware(app: Express) {
       contentSecurityPolicy: false,
     }),
   );
-  const allowedOrigins = new Set([env.clientOrigin]);
+  const allowedOrigins = new Set([env.clientOrigin, env.publicBaseUrl]);
   if (env.nodeEnv !== "production") {
     try {
       const client = new URL(env.clientOrigin);
