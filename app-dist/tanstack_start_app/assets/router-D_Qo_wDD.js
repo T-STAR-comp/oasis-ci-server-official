@@ -1,4 +1,4 @@
-import { S as reactExports, v as functionalUpdate$1, b as arraysEqual, i as createLRUCache, F as isPromise, G as isRedirect, E as isNotFound, A as invariant$1, h as createControlledPromise, _ as rootRouteId, H as isServer$1, f as compileDecodeCharMap, a0 as trimPath, Z as rewriteBasepath, g as composeRewrites, Q as processRouteTree, P as processRouteMasks, Y as resolvePath, d as cleanPath, a2 as trimPathRight, N as parseHref, q as executeRewriteInput, B as isDangerousProtocol, T as redirect, u as findSingleMatch, l as deepEqual$1, D as DEFAULT_PROTOCOL_ALLOWLIST, c as buildRouteBranch, z as interpolatePath, M as nullReplaceEqualDeep, V as replaceEqualDeep$1, K as last$1, k as decodePath, s as findFlatMatch, t as findRouteMatch, y as hasKeys, r as executeRewriteOutput, n as encodePathLikeUrl, a1 as trimPathLeft, I as joinPaths, a4 as useRouter, m as dummyMatchContext, L as matchContext, x as getDefaultExportFromCjs, W as requireReactDom, p as exactPathTest, U as removeTrailingSlash, R as React, J as jsxRuntimeExports, a3 as useHydrated, o as escapeHtml, C as isInlinableStylesheet, w as getAssetCrossOrigin, X as resolveManifestAssetLink, O as Outlet, e as commonjsGlobal, a as React$1 } from "./server-C2tU9qFW.js";
+import { S as reactExports, v as functionalUpdate$1, b as arraysEqual, i as createLRUCache, F as isPromise, G as isRedirect, E as isNotFound, A as invariant$1, h as createControlledPromise, _ as rootRouteId, H as isServer$1, f as compileDecodeCharMap, a0 as trimPath, Z as rewriteBasepath, g as composeRewrites, Q as processRouteTree, P as processRouteMasks, Y as resolvePath, d as cleanPath, a2 as trimPathRight, N as parseHref, q as executeRewriteInput, B as isDangerousProtocol, T as redirect, u as findSingleMatch, l as deepEqual$1, D as DEFAULT_PROTOCOL_ALLOWLIST, c as buildRouteBranch, z as interpolatePath, M as nullReplaceEqualDeep, V as replaceEqualDeep$1, K as last$1, k as decodePath, s as findFlatMatch, t as findRouteMatch, y as hasKeys, r as executeRewriteOutput, n as encodePathLikeUrl, a1 as trimPathLeft, I as joinPaths, a4 as useRouter, m as dummyMatchContext, L as matchContext, x as getDefaultExportFromCjs, W as requireReactDom, p as exactPathTest, U as removeTrailingSlash, R as React, J as jsxRuntimeExports, a3 as useHydrated, o as escapeHtml, C as isInlinableStylesheet, w as getAssetCrossOrigin, X as resolveManifestAssetLink, O as Outlet, e as commonjsGlobal, a as React$1 } from "./server-Cpb1cgT2.js";
 import "node:async_hooks";
 import "node:stream/web";
 import "node:stream";
@@ -4961,7 +4961,7 @@ const apiRoutes = {
   resolveFlag: "/api/flags/resolve",
   users: "/api/users"
 };
-const apiBaseUrl = "http://localhost:4000".replace(/\/$/, "");
+const apiBaseUrl = "https://oasisafrica.xyz".replace(/\/$/, "");
 function apiUrl(path) {
   return `${apiBaseUrl}${path}`;
 }

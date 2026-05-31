@@ -10,7 +10,7 @@
     "dev": "tsx watch src/server.ts",
     "start": "node server.cjs",
     "start:tsx": "tsx src/server.ts",
-    "build:app": "npm run build --prefix ../oasis-ci-app",
+    "build:app": "node scripts/build-app.mjs",
     "build": "tsc && node -e \"const fs=require('fs');fs.mkdirSync('dist/database',{recursive:true});fs.copyFileSync('src/database/schema.sql','dist/database/schema.sql');\"",
     "build:all": "npm run build:app && npm run build",
     "bundle:app": "node scripts/bundle-app-dist.mjs",
