@@ -9,12 +9,24 @@ export function getServerPackageRoot() {
   return path.resolve(moduleDir, "../..");
 }
 
+function resolveAppRoot() {
+  const configured = process.env.OASIS_CI_APP_ROOT?.trim();
+  if (configured) return path.resolve(configured);
+
+  const serverRoot = getServerPackageRoot();
+  const bundled = path.join(serverRoot, "app-dist");
+  if (fs.existsSync(path.join(bundled, "client"))) return bundled;
+
+  return path.resolve(serverRoot, "../oasis-ci-app");
+}
+
 export function getAppDistPaths() {
-  const appRoot = path.resolve(getServerPackageRoot(), "../oasis-ci-app");
+  const appRoot = resolveAppRoot();
+  const distRoot = appRoot.endsWith(`${path.sep}dist`) ? appRoot : path.join(appRoot, "dist");
   return {
     appRoot,
-    clientDir: path.join(appRoot, "dist/client"),
-    serverEntry: path.join(appRoot, "dist/server/server.js"),
+    clientDir: path.join(distRoot, "client"),
+    serverEntry: path.join(distRoot, "server/server.js"),
   };
 }
 

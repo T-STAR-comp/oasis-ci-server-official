@@ -2,13 +2,19 @@
   "name": "oasis-ci-server",
   "private": true,
   "type": "module",
+  "main": "server.cjs",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "start": "node dist/server.js",
+    "start": "node server.cjs",
     "start:tsx": "tsx src/server.ts",
     "build:app": "npm run build --prefix ../oasis-ci-app",
     "build": "tsc && node -e \"const fs=require('fs');fs.mkdirSync('dist/database',{recursive:true});fs.copyFileSync('src/database/schema.sql','dist/database/schema.sql');\"",
     "build:all": "npm run build:app && npm run build",
+    "bundle:app": "node scripts/bundle-app-dist.mjs",
+    "build:deploy": "npm run build:all && npm run bundle:app",
     "check": "tsc --noEmit"
   },
   "dependencies": {
