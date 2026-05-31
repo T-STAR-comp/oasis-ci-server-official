@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { readState } from "../database/stateStore.js";
 import { withSession } from "../middleware/session.js";
-import { getPlatformSettings } from "../services/platformSettings.js";
+import { readPlatformSettings } from "../services/platformSettings.js";
 import { sanitizeStateForUser } from "../services/privacy.js";
 import { sendOk } from "../utils/responses.js";
 
@@ -11,7 +11,7 @@ bootstrapRouter.get("/api/bootstrap", withSession(false), async (req, res) => {
   const state = await readState();
   sendOk(res, {
     ...sanitizeStateForUser(state, req.user),
-    platform: getPlatformSettings(),
+    platform: await readPlatformSettings(),
   });
 });
 

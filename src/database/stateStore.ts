@@ -21,7 +21,7 @@ export function getStoreMode() {
   return pool ? "mysql" : "unavailable";
 }
 
-function requirePool(): Pool {
+export function requirePool(): Pool {
   if (!pool) throw new Error("MySQL is not initialized. Check MYSQL_* env vars.");
   return pool;
 }
@@ -60,6 +60,8 @@ export async function initDatabase() {
   const schemaSql = await readSchemaSql();
   await pool.query(schemaSql);
   await ensureSchemaMigrations();
+  const { ensurePlatformSettingsTable } = await import("../services/platformSettingsStore.js");
+  await ensurePlatformSettingsTable();
 
   await ensureBootstrapAdmin();
 }
@@ -193,6 +195,15 @@ async function ensureSchemaMigrations() {
       }
     }
   }
+
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS platform_settings (
+      id TINYINT UNSIGNED PRIMARY KEY DEFAULT 1,
+      remediation_email VARCHAR(255) NOT NULL,
+      remediation_phone VARCHAR(64) NOT NULL DEFAULT '',
+      updated_at DATETIME NOT NULL
+    ) ENGINE=InnoDB
+  `);
 
   await db.query(`
     CREATE TABLE IF NOT EXISTS user_notifications (

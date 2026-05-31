@@ -77,35 +77,12 @@ usersRouter.post(
       policiesAcknowledged: z.literal(true),
     }),
   ),
-  async (req, res) => {
-    if (req.body.policiesVersion !== CURRENT_POLICIES_VERSION) {
-      return sendFail(res, "Accept the current Oasis CI policies before creating an account.", 400);
-    }
-
-    const state = await readState();
-    const email = req.body.email.trim().toLowerCase();
-    if (state.users.some((user) => user.email.toLowerCase() === email)) {
-      return sendFail(res, "An account with that email already exists.", 409);
-    }
-    const user: User = recordPolicyAcceptance({
-      id: createId("user"),
-      name: req.body.name.trim(),
-      email,
-      role: "pen_tester",
-      status: "pending_review",
-      title: "Security Researcher Applicant",
-      company: req.body.company?.trim() || "Independent",
-      verifiedDomains: [],
-      passwordHint: "Password set during researcher account request.",
-      passwordHash: await hashPassword(req.body.password),
-    });
-    state.users = [user, ...state.users];
-    state.auditLog = [
-      createAuditEvent(user.name, "Researcher account requested", user.email, "Waiting for moderator verification."),
-      ...state.auditLog,
-    ];
-    await writeState(state);
-    sendOk(res, { ...user, passwordHash: undefined }, "Researcher account sent to moderators for verification.");
+  async (_req, res) => {
+    sendFail(
+      res,
+      "Pen tester account requests are not available. Owners may contact Oasis CI for remediation assistance using the address configured by your administrator.",
+      403,
+    );
   },
 );
 

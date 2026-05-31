@@ -1,16 +1,7 @@
-import { env } from "../config/env.js";
-import {
-  CURRENT_POLICIES_VERSION,
-  POLICIES_EFFECTIVE_DATE,
-  POLICIES_TITLE,
-} from "../config/policies.js";
+import { readPlatformSettings } from "./platformSettingsStore.js";
 
-export function getPlatformSettings() {
-  return {
-    remediationEmail: env.remediationEmail,
-    remediationPhone: env.remediationPhone,
-    policiesVersion: CURRENT_POLICIES_VERSION,
-    policiesEffectiveDate: POLICIES_EFFECTIVE_DATE,
-    policiesTitle: POLICIES_TITLE,
-  };
+export { readPlatformSettings, updatePlatformSettings } from "./platformSettingsStore.js";
+
+export async function getPlatformSettings() {
+  return readPlatformSettings();
 }
