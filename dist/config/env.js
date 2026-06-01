@@ -7,10 +7,48 @@ const port = Number(process.env.PORT ?? 4000);
 const nodeEnv = process.env.NODE_ENV ?? "development";
 const defaultPublicBase = nodeEnv === "production" ? "https://oasisafrica.xyz" : `http://localhost:${port}`;
 const publicBaseUrl = (process.env.PUBLIC_BASE_URL ?? defaultPublicBase).replace(/\/$/, "");
+function tryOrigin(url) {
+    try {
+        return new URL(url).origin;
+    }
+    catch {
+        return null;
+    }
+}
+/** Browser Origins allowed by CORS (includes www / non-www variants). */
+export function getAllowedCorsOrigins() {
+    const origins = new Set();
+    const add = (value) => {
+        const origin = value ? tryOrigin(value) : null;
+        if (!origin)
+            return;
+        origins.add(origin);
+        try {
+            const url = new URL(origin);
+            if (url.hostname.startsWith("www.")) {
+                origins.add(`${url.protocol}//${url.hostname.slice(4)}${url.port ? `:${url.port}` : ""}`);
+            }
+            else if (url.hostname !== "localhost" && url.hostname !== "127.0.0.1") {
+                origins.add(`${url.protocol}//www.${url.hostname}${url.port ? `:${url.port}` : ""}`);
+            }
+        }
+        catch {
+            // ignore
+        }
+    };
+    add(publicBaseUrl);
+    add(process.env.CLIENT_ORIGIN ??
+        (nodeEnv === "production" ? publicBaseUrl : "http://localhost:5173"));
+    for (const entry of (process.env.ALLOWED_ORIGINS ?? "").split(",")) {
+        add(entry.trim());
+    }
+    return origins;
+}
 export const env = {
     port,
     nodeEnv,
     publicBaseUrl,
+    allowedCorsOrigins: getAllowedCorsOrigins(),
     clientOrigin: process.env.CLIENT_ORIGIN ??
         (nodeEnv === "production" ? publicBaseUrl : "http://localhost:5173"),
     sessionSecret: process.env.SESSION_SECRET ?? "dev-only-change-this-secret-before-production-use",

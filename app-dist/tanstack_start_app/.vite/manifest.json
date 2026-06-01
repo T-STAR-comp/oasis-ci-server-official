@@ -9,8 +9,8 @@
     "file": "assets/styles-BhP2GTK5.css",
     "src": "C:/Users/SAMUEL CHILINDA/Desktop/OasisComps/oasis CI/oasis-ci-app/src/styles.css"
   },
-  "_server-Cpb1cgT2.js": {
-    "file": "assets/server-Cpb1cgT2.js",
+  "_server-D-z-dYOw.js": {
+    "file": "assets/server-D-z-dYOw.js",
     "name": "server",
     "isDynamicEntry": true,
     "dynamicImports": [
@@ -20,33 +20,33 @@
       "%23tanstack-start-plugin-adapters"
     ]
   },
-  "_worker-entry-Bb-mjg7w.js": {
-    "file": "assets/worker-entry-Bb-mjg7w.js",
+  "_worker-entry-DKTfGygE.js": {
+    "file": "assets/worker-entry-DKTfGygE.js",
     "name": "worker-entry",
     "dynamicImports": [
-      "_server-Cpb1cgT2.js"
+      "_server-D-z-dYOw.js"
     ]
   },
   "src/router.tsx": {
-    "file": "assets/router-D_Qo_wDD.js",
+    "file": "assets/router-CWb2nrVi.js",
     "name": "router",
     "src": "src/router.tsx",
     "isDynamicEntry": true,
     "imports": [
-      "_server-Cpb1cgT2.js"
+      "_server-D-z-dYOw.js"
     ],
     "assets": [
       "assets/styles-BhP2GTK5.css"
     ]
   },
   "src/start.ts": {
-    "file": "assets/start-CCIiAFf6.js",
+    "file": "assets/start-C742dPqL.js",
     "name": "start",
     "src": "src/start.ts",
     "isDynamicEntry": true,
     "imports": [
-      "_worker-entry-Bb-mjg7w.js",
-      "_server-Cpb1cgT2.js"
+      "_worker-entry-DKTfGygE.js",
+      "_server-D-z-dYOw.js"
     ]
   },
   "tanstack-start-manifest:v": {
@@ -61,7 +61,7 @@
     "src": "virtual:cloudflare/worker-entry",
     "isEntry": true,
     "imports": [
-      "_worker-entry-Bb-mjg7w.js"
+      "_worker-entry-DKTfGygE.js"
     ]
   }
 }

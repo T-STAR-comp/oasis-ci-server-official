@@ -1,4 +1,4 @@
-import { K as jsxRuntimeExports } from "./server-CZSHvrJi.js";
+import { K as jsxRuntimeExports } from "./server-BEOzF3ot.js";
 import { C as CURRENT_POLICIES_VERSION } from "./oasis-ci-policies-D7vl66Ag.js";
 function PoliciesCheckbox({
   checked,

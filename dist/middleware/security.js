@@ -10,7 +10,7 @@ export function registerSecurityMiddleware(app) {
         crossOriginResourcePolicy: { policy: "cross-origin" },
         contentSecurityPolicy: false,
     }));
-    const allowedOrigins = new Set([env.clientOrigin, env.publicBaseUrl]);
+    const allowedOrigins = env.allowedCorsOrigins;
     if (env.nodeEnv !== "production") {
         try {
             const client = new URL(env.clientOrigin);
@@ -25,10 +25,32 @@ export function registerSecurityMiddleware(app) {
             // Keep the configured client origin only.
         }
     }
+    let publicHostname = "";
+    try {
+        publicHostname = new URL(env.publicBaseUrl).hostname;
+    }
+    catch {
+        // ignore
+    }
     app.use(cors({
         origin(origin, callback) {
-            if (!origin || allowedOrigins.has(origin))
+            if (!origin)
                 return callback(null, true);
+            if (allowedOrigins.has(origin))
+                return callback(null, true);
+            if (publicHostname) {
+                try {
+                    const originHost = new URL(origin).hostname;
+                    const bare = publicHostname.startsWith("www.") ? publicHostname.slice(4) : publicHostname;
+                    const originBare = originHost.startsWith("www.") ? originHost.slice(4) : originHost;
+                    if (originBare === bare)
+                        return callback(null, true);
+                }
+                catch {
+                    // ignore
+                }
+            }
+            console.warn(`CORS rejected origin: ${origin} (allowed: ${[...allowedOrigins].join(", ")})`);
             return callback(new Error("Origin is not allowed by Oasis CI CORS policy."));
         },
         credentials: true,
