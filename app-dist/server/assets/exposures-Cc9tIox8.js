@@ -1,9 +1,9 @@
-import { T as reactExports, K as jsxRuntimeExports } from "./server-BEOzF3ot.js";
-import { i as createLucideIcon, x as useAppContext, n as hasAnyRole, w as sortBySeverity, q as isExposureVisibleToPublic, S as Search, o as isDomainClaimed, g as categoryMeta, m as getExposurePublicTitle, k as formatFullDate, y as useNavigate } from "./router-5uxBjxzZ.js";
-import { P as PoliciesCheckbox } from "./PoliciesCheckbox-aD_D-Cyu.js";
-import { S as SeverityPill } from "./SeverityPill-BwJBNLGv.js";
+import { T as reactExports, K as jsxRuntimeExports } from "./server-D9mKGuEi.js";
+import { i as createLucideIcon, x as useAppContext, n as hasAnyRole, w as sortBySeverity, q as isExposureVisibleToPublic, S as Search, o as isDomainClaimed, g as categoryMeta, m as getExposurePublicTitle, k as formatFullDate, y as useNavigate } from "./router-D4_r2idp.js";
+import { P as PoliciesCheckbox } from "./PoliciesCheckbox-Bticpd7d.js";
+import { S as SeverityPill } from "./SeverityPill-B_tqL55s.js";
 import { C as CURRENT_POLICIES_VERSION } from "./oasis-ci-policies-D7vl66Ag.js";
-import { S as ShieldCheck } from "./shield-check-Cdt36ITL.js";
+import { S as ShieldCheck } from "./shield-check-BO-7j1ah.js";
 import "node:async_hooks";
 import "node:stream";
 import "node:stream/web";
@@ -225,18 +225,20 @@ function ClaimFlowModal({
       setMessage("This domain already has a verified owner and cannot be claimed again.");
       return;
     }
-    const claim = await startClaim({
+    const claimResult = await startClaim({
+      exposureId: exposure.id,
       domain: exposure.domain,
       method,
       contact: claimEmail
     });
-    if (!claim) {
-      setMessage("The server could not start this claim. Check the API and try again.");
+    if (!claimResult.ok || !claimResult.claim) {
+      setMessage(claimResult.message || "The server could not start this claim. Check the API and try again.");
       return;
     }
+    const claim = claimResult.claim;
     setClaimId(claim.id);
     setEnteredToken("");
-    setMessage(`A verification code was sent to ${claimEmail}. Enter it below with your password to finish claiming.`);
+    setMessage(claimResult.message || `A verification code was sent to ${claimEmail}. Enter it below with your password to finish claiming.`);
   }
   async function handleVerify() {
     if (!claimId) return;

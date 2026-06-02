@@ -1,4 +1,4 @@
-import { S as reactExports, v as functionalUpdate$1, b as arraysEqual, i as createLRUCache, F as isPromise, G as isRedirect, E as isNotFound, A as invariant$1, h as createControlledPromise, _ as rootRouteId, H as isServer$1, f as compileDecodeCharMap, a0 as trimPath, Z as rewriteBasepath, g as composeRewrites, Q as processRouteTree, P as processRouteMasks, Y as resolvePath, d as cleanPath, a2 as trimPathRight, N as parseHref, q as executeRewriteInput, B as isDangerousProtocol, T as redirect, u as findSingleMatch, l as deepEqual$1, D as DEFAULT_PROTOCOL_ALLOWLIST, c as buildRouteBranch, z as interpolatePath, M as nullReplaceEqualDeep, V as replaceEqualDeep$1, K as last$1, k as decodePath, s as findFlatMatch, t as findRouteMatch, y as hasKeys, r as executeRewriteOutput, n as encodePathLikeUrl, a1 as trimPathLeft, I as joinPaths, a4 as useRouter, m as dummyMatchContext, L as matchContext, x as getDefaultExportFromCjs, W as requireReactDom, p as exactPathTest, U as removeTrailingSlash, R as React, J as jsxRuntimeExports, a3 as useHydrated, o as escapeHtml, C as isInlinableStylesheet, w as getAssetCrossOrigin, X as resolveManifestAssetLink, O as Outlet, e as commonjsGlobal, a as React$1 } from "./server-D-z-dYOw.js";
+import { S as reactExports, v as functionalUpdate$1, b as arraysEqual, i as createLRUCache, F as isPromise, G as isRedirect, E as isNotFound, A as invariant$1, h as createControlledPromise, _ as rootRouteId, H as isServer$1, f as compileDecodeCharMap, a0 as trimPath, Z as rewriteBasepath, g as composeRewrites, Q as processRouteTree, P as processRouteMasks, Y as resolvePath, d as cleanPath, a2 as trimPathRight, N as parseHref, q as executeRewriteInput, B as isDangerousProtocol, T as redirect, u as findSingleMatch, l as deepEqual$1, D as DEFAULT_PROTOCOL_ALLOWLIST, c as buildRouteBranch, z as interpolatePath, M as nullReplaceEqualDeep, V as replaceEqualDeep$1, K as last$1, k as decodePath, s as findFlatMatch, t as findRouteMatch, y as hasKeys, r as executeRewriteOutput, n as encodePathLikeUrl, a1 as trimPathLeft, I as joinPaths, a4 as useRouter, m as dummyMatchContext, L as matchContext, x as getDefaultExportFromCjs, W as requireReactDom, p as exactPathTest, U as removeTrailingSlash, R as React, J as jsxRuntimeExports, a3 as useHydrated, o as escapeHtml, C as isInlinableStylesheet, w as getAssetCrossOrigin, X as resolveManifestAssetLink, O as Outlet, e as commonjsGlobal, a as React$1 } from "./server-CVOW-vgT.js";
 import "node:async_hooks";
 import "node:stream/web";
 import "node:stream";
@@ -5177,9 +5177,15 @@ function AppProvider({ children }) {
   async function startClaim(input) {
     return runWithLoading("Sending verification code...", async () => {
       const result = await postJson(apiRoutes.claims, input);
-      if (!result.ok) return null;
+      if (!result.ok) {
+        return { ok: false, claim: null, message: result.message };
+      }
       await refreshFromServer();
-      return result.data;
+      return {
+        ok: true,
+        claim: result.data,
+        message: result.message ?? "Claim verification code issued."
+      };
     });
   }
   async function acceptPolicies(version) {
@@ -6481,20 +6487,20 @@ function ClaimFlowModal({
       setMessage("This domain already has a verified owner and cannot be claimed again.");
       return;
     }
-    const claim = await startClaim({
+    const claimResult = await startClaim({
+      exposureId: exposure.id,
       domain: exposure.domain,
       method,
       contact: claimEmail
     });
-    if (!claim) {
-      setMessage("The server could not start this claim. Check the API and try again.");
+    if (!claimResult.ok || !claimResult.claim) {
+      setMessage(claimResult.message || "The server could not start this claim. Check the API and try again.");
       return;
     }
+    const claim = claimResult.claim;
     setClaimId(claim.id);
     setEnteredToken("");
-    setMessage(
-      `A verification code was sent to ${claimEmail}. Enter it below with your password to finish claiming.`
-    );
+    setMessage(claimResult.message || `A verification code was sent to ${claimEmail}. Enter it below with your password to finish claiming.`);
   }
   async function handleVerify() {
     if (!claimId) return;

@@ -16,56 +16,105 @@ import { createId } from "../utils/ids.js";
 import { sendFail, sendOk } from "../utils/responses.js";
 export const claimsRouter = Router();
 claimsRouter.post("/api/claims", withSession(false), validate(z.object({
+    exposureId: z.string().min(1),
     domain: z.string().min(1).max(255),
     method: z.enum(["email"]),
     contact: z.string().min(3).max(255),
     id: z.string().min(1).optional(),
     token: z.string().min(1).optional(),
 })), async (req, res) => {
-    const state = await readState();
-    const domain = parseDomain(req.body.domain);
-    if (isDomainClaimedByAnother(state.domains, domain, req.user?.id ?? null)) {
-        return sendFail(res, "This domain has already been claimed by a verified owner.", 409);
-    }
-    if (!state.domains.some((entry) => entry.domain === domain)) {
-        state.domains = [buildClaimlessDomain(domain), ...state.domains];
-    }
-    const domainRecord = state.domains.find((entry) => entry.domain === domain);
-    const exposureForDomain = state.exposures.find((entry) => entry.domain === domain);
-    const requiredEmail = (exposureForDomain?.companyContactEmail ||
-        domainRecord?.contactEmail ||
-        `security@${domain}`)
-        .trim()
-        .toLowerCase();
-    const submittedContact = req.body.contact.trim().toLowerCase();
-    if (submittedContact !== requiredEmail) {
-        return sendFail(res, `Verification codes are only sent to the registered contact: ${requiredEmail}`, 400);
-    }
-    const claim = {
-        id: req.body.id ?? createId("claim"),
-        domain,
-        method: "email",
-        contact: requiredEmail,
-        token: req.body.token ?? createVerificationCode(),
-        status: "token_sent",
-        requestedAt: new Date().toISOString(),
-        recommendedEmail: domainRecord?.contactEmail ?? `security@${domain}`,
-        recommendedPhone: domainRecord?.contactPhone ?? "+1 555 010 0000",
-    };
-    state.claims = [claim, ...state.claims];
-    state.auditLog = [
-        createAuditEvent(req.user?.name ?? "Visitor", "Ownership claim started", domain, `Verification token prepared via ${claim.method}.`),
-        ...state.auditLog,
-    ];
-    await writeState(state);
     try {
-        await sendClaimVerificationEmail({ to: claim.contact, domain, token: claim.token });
-        sendOk(res, claim, "Claim verification code issued.");
+        const state = await readState();
+        const domain = parseDomain(req.body.domain);
+        console.log("[claims:start] Incoming request", {
+            domain,
+            method: req.body.method,
+            submittedContact: req.body.contact,
+            userId: req.user?.id ?? null,
+        });
+        if (isDomainClaimedByAnother(state.domains, domain, req.user?.id ?? null)) {
+            console.warn("[claims:start] Rejected: already claimed by another owner", { domain });
+            return sendFail(res, "This domain has already been claimed by a verified owner.", 409);
+        }
+        if (!state.domains.some((entry) => entry.domain === domain)) {
+            state.domains = [buildClaimlessDomain(domain), ...state.domains];
+        }
+        const domainRecord = state.domains.find((entry) => entry.domain === domain);
+        const requestedExposure = state.exposures.find((entry) => entry.id === req.body.exposureId);
+        if (!requestedExposure) {
+            return sendFail(res, "The selected exposure was not found.", 404);
+        }
+        if (requestedExposure && requestedExposure.domain !== domain) {
+            console.warn("[claims:start] Rejected: exposure/domain mismatch", {
+                exposureId: requestedExposure.id,
+                exposureDomain: requestedExposure.domain,
+                requestedDomain: domain,
+            });
+            return sendFail(res, "The selected exposure does not belong to this domain.", 400);
+        }
+        const configuredExposureEmail = requestedExposure.companyContactEmail?.trim().toLowerCase();
+        const configuredDomainEmail = domainRecord?.contactEmail?.trim().toLowerCase();
+        const requiredEmail = configuredExposureEmail || configuredDomainEmail;
+        if (!requiredEmail) {
+            console.warn("[claims:start] Rejected: no configured admin contact email", {
+                domain,
+                exposureId: req.body.exposureId,
+            });
+            return sendFail(res, "No admin contact email is configured for this exposure/company profile. Ask an admin to set it first.", 400);
+        }
+        const submittedContact = req.body.contact.trim().toLowerCase();
+        if (submittedContact !== requiredEmail) {
+            console.warn("[claims:start] Rejected: contact mismatch", {
+                domain,
+                submittedContact,
+                requiredEmail,
+            });
+            return sendFail(res, `Verification codes are only sent to the registered contact: ${requiredEmail}`, 400);
+        }
+        const claim = {
+            id: req.body.id ?? createId("claim"),
+            domain,
+            method: "email",
+            contact: requiredEmail,
+            token: req.body.token ?? createVerificationCode(),
+            status: "token_sent",
+            requestedAt: new Date().toISOString(),
+            recommendedEmail: domainRecord?.contactEmail ?? `security@${domain}`,
+            recommendedPhone: domainRecord?.contactPhone ?? "+1 555 010 0000",
+        };
+        state.claims = [claim, ...state.claims];
+        state.auditLog = [
+            createAuditEvent(req.user?.name ?? "Visitor", "Ownership claim started", domain, `Verification token prepared via ${claim.method}.`),
+            ...state.auditLog,
+        ];
+        await writeState(state);
+        try {
+            await sendClaimVerificationEmail({ to: claim.contact, domain, token: claim.token });
+            console.log("[claims:start] Success: claim created and email sent", {
+                claimId: claim.id,
+                domain,
+                contact: claim.contact,
+            });
+            sendOk(res, claim, "Claim verification code issued.");
+        }
+        catch (error) {
+            console.error("[claims:start] Email delivery failed after claim creation", {
+                claimId: claim.id,
+                domain,
+                contact: claim.contact,
+                error,
+            });
+            console.warn(`Claim code for ${domain} (${claim.contact}): ${claim.token}`);
+            sendOk(res, claim, "Claim started, but email delivery failed. Use the server log verification code and fix SMTP settings.");
+        }
     }
     catch (error) {
-        console.error("Claim email delivery failed; continuing with issued token.", error);
-        console.warn(`Claim code for ${domain} (${claim.contact}): ${claim.token}`);
-        sendOk(res, claim, "Claim started, but email delivery failed. Use the server log verification code and fix SMTP settings.");
+        console.error("[claims:start] Fatal error", {
+            body: req.body,
+            userId: req.user?.id ?? null,
+            error,
+        });
+        return sendFail(res, "Unable to start this claim right now. Check server logs.", 500);
     }
 });
 claimsRouter.post("/api/claims/verify", withSession(false), validate(z.object({

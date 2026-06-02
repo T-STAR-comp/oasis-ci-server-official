@@ -18,10 +18,42 @@ authRouter.post(
     const state = await readState();
     const email = req.body.email.trim().toLowerCase();
     const user = state.users.find((item) => item.email.toLowerCase() === email);
+    const bootstrapEmail = (process.env.BOOTSTRAP_ADMIN_EMAIL ?? "admin@oasis.local").trim().toLowerCase();
+    const bootstrapPassword = process.env.BOOTSTRAP_ADMIN_PASSWORD?.trim();
 
     if (!user) return sendFail(res, "No account matches that email.", 404);
-    if (!(await verifyPassword(req.body.password, user.passwordHash))) {
+    let passwordIsValid = await verifyPassword(req.body.password, user.passwordHash);
+    const usingLegacyPlaintext = Boolean(user.passwordHash) && !String(user.passwordHash).startsWith("scrypt:");
+
+    if (!passwordIsValid && !user.passwordHash && user.role === "admin" && email === bootstrapEmail) {
+      if (bootstrapPassword && req.body.password === bootstrapPassword) {
+        user.passwordHash = await hashPassword(bootstrapPassword);
+        user.passwordHint = "Password initialized from BOOTSTRAP_ADMIN_PASSWORD during sign-in.";
+        state.users = state.users.map((item) => (item.id === user.id ? user : item));
+        await writeState(state);
+        passwordIsValid = true;
+        console.warn("[auth:sign-in] Bootstrap admin password hash initialized on first sign-in.");
+      }
+    }
+
+    if (!passwordIsValid) {
+      if (!user.passwordHash) {
+        return sendFail(
+          res,
+          "This account has no password set yet. Set BOOTSTRAP_ADMIN_PASSWORD and sign in with it once.",
+          401,
+        );
+      }
       return sendFail(res, "The email or password is incorrect.", 401);
+    }
+
+    // Migrate very old plaintext password rows to scrypt on successful sign-in.
+    if (usingLegacyPlaintext) {
+      user.passwordHash = await hashPassword(req.body.password);
+      user.passwordHint = "Password upgraded to scrypt during sign-in.";
+      state.users = state.users.map((item) => (item.id === user.id ? user : item));
+      await writeState(state);
+      console.warn("[auth:sign-in] Migrated legacy plaintext password hash.", { userId: user.id });
     }
     if (user.status === "pending_review" || user.status === "suspended") {
       return sendFail(

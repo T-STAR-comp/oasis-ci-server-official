@@ -13,13 +13,8 @@ function decodeSalt(encoded) {
     if (/^[0-9a-f]{32}$/i.test(encoded)) {
         return Buffer.from(encoded, "hex");
     }
-    try {
-        const legacySalt = Buffer.from(encoded, "base64url");
-        return legacySalt.length > 0 ? legacySalt : null;
-    }
-    catch {
-        return null;
-    }
+    // Legacy format used the base64url string itself as salt text, not decoded bytes.
+    return encoded;
 }
 function encodeHash(hash) {
     return hash.toString("base64");
@@ -54,8 +49,10 @@ export async function verifyPassword(password, storedHash) {
     if (!storedHash || !password)
         return false;
     const [scheme, saltPart, hashPart] = storedHash.split(":");
-    if (scheme !== "scrypt" || !saltPart || !hashPart)
-        return false;
+    if (scheme !== "scrypt" || !saltPart || !hashPart) {
+        // Very old fallback: plaintext or non-prefixed hashes in early local data.
+        return storedHash === password;
+    }
     const salt = decodeSalt(saltPart);
     const expected = decodeHash(hashPart);
     if (!salt || !expected)
