@@ -1,7 +1,54 @@
 import nodemailer from "nodemailer";
 
+type MailConfig = {
+  host: string;
+  port: number;
+  secure: boolean;
+  user?: string;
+  pass?: string;
+  fromAddress: string;
+  fromName: string;
+};
+
+function normalizeEncryption(value?: string) {
+  const normalized = String(value ?? "").trim().toLowerCase();
+  if (["ssl", "tls", "starttls", "true", "1"].includes(normalized)) return true;
+  if (["none", "false", "0", ""].includes(normalized)) return false;
+  return false;
+}
+
+function readMailConfig(): MailConfig | null {
+  const host = (process.env.MAIL_HOST ?? process.env.SMTP_HOST ?? "").trim();
+  const fromAddress = (process.env.MAIL_FROM_ADDRESS ?? process.env.SMTP_FROM ?? "").trim();
+  if (!host || !fromAddress) return null;
+
+  const fromName = (process.env.MAIL_FROM_NAME ?? "Oasis CI").trim() || "Oasis CI";
+  const port = Number(process.env.MAIL_PORT ?? process.env.SMTP_PORT ?? 587);
+  const secure =
+    process.env.MAIL_ENCRYPTION !== undefined
+      ? normalizeEncryption(process.env.MAIL_ENCRYPTION)
+      : String(process.env.SMTP_SECURE ?? "false").toLowerCase() === "true";
+  const user = (process.env.MAIL_USERNAME ?? process.env.SMTP_USER ?? "").trim() || undefined;
+  const pass = (process.env.MAIL_PASSWORD ?? process.env.SMTP_PASS ?? "").trim() || undefined;
+
+  return { host, port, secure, user, pass, fromAddress, fromName };
+}
+
 function isEmailConfigured() {
-  return Boolean(process.env.SMTP_HOST && process.env.SMTP_FROM);
+  return Boolean(readMailConfig());
+}
+
+function createTransport(config: MailConfig) {
+  return nodemailer.createTransport({
+    host: config.host,
+    port: config.port,
+    secure: config.secure,
+    auth: config.user && config.pass ? { user: config.user, pass: config.pass } : undefined,
+  });
+}
+
+function formatFrom(config: MailConfig) {
+  return `${config.fromName} <${config.fromAddress}>`;
 }
 
 export async function sendExposureNotificationEmail(input: {
@@ -14,27 +61,15 @@ export async function sendExposureNotificationEmail(input: {
   fullUrl: string;
   description: string;
 }) {
-  if (!isEmailConfigured()) {
+  const config = readMailConfig();
+  if (!config) {
     console.warn(
-      "SMTP is not configured (set SMTP_HOST and SMTP_FROM). Skipping exposure email notification.",
+      "Mail is not configured (set MAIL_HOST and MAIL_FROM_ADDRESS). Skipping exposure email notification.",
     );
     return;
   }
 
-  const host = String(process.env.SMTP_HOST);
-  const port = Number(process.env.SMTP_PORT ?? 587);
-  const secure = String(process.env.SMTP_SECURE ?? "false").toLowerCase() === "true";
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-
-  const transporter = nodemailer.createTransport({
-    host,
-    port,
-    secure,
-    auth: user && pass ? { user, pass } : undefined,
-  });
-
-  const from = String(process.env.SMTP_FROM);
+  const transporter = createTransport(config);
   const subject = `Oasis CI Exposure Detected: ${input.domain} (${input.severity.toUpperCase()})`;
 
   const text = [
@@ -56,7 +91,7 @@ export async function sendExposureNotificationEmail(input: {
   ].join("\n");
 
   await transporter.sendMail({
-    from,
+    from: formatFrom(config),
     to: input.to,
     subject,
     text,
@@ -68,27 +103,18 @@ export async function sendClaimVerificationEmail(input: {
   domain: string;
   token: string;
 }) {
-  if (!isEmailConfigured()) {
+  const config = readMailConfig();
+  if (!config) {
     console.warn(
-      `SMTP is not configured (set SMTP_HOST and SMTP_FROM). Claim code for ${input.domain}: ${input.token}`,
+      `Mail is not configured (set MAIL_HOST and MAIL_FROM_ADDRESS). Claim code for ${input.domain}: ${input.token}`,
     );
     return;
   }
 
-  const host = String(process.env.SMTP_HOST);
-  const port = Number(process.env.SMTP_PORT ?? 587);
-  const secure = String(process.env.SMTP_SECURE ?? "false").toLowerCase() === "true";
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-  const transporter = nodemailer.createTransport({
-    host,
-    port,
-    secure,
-    auth: user && pass ? { user, pass } : undefined,
-  });
+  const transporter = createTransport(config);
 
   await transporter.sendMail({
-    from: String(process.env.SMTP_FROM),
+    from: formatFrom(config),
     to: input.to,
     subject: `Oasis CI verification code for ${input.domain}`,
     text: [
@@ -110,31 +136,22 @@ export async function sendOwnerFixDeniedEmail(input: {
   exposureId: string;
   moderatorNote?: string;
 }) {
-  if (!isEmailConfigured()) {
+  const config = readMailConfig();
+  if (!config) {
     console.warn(
-      `SMTP not configured. Fix denied for ${input.exposureId}; owner ${input.to} should be notified in-app.`,
+      `Mail not configured. Fix denied for ${input.exposureId}; owner ${input.to} should be notified in-app.`,
     );
     return;
   }
 
-  const host = String(process.env.SMTP_HOST);
-  const port = Number(process.env.SMTP_PORT ?? 587);
-  const secure = String(process.env.SMTP_SECURE ?? "false").toLowerCase() === "true";
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-  const transporter = nodemailer.createTransport({
-    host,
-    port,
-    secure,
-    auth: user && pass ? { user, pass } : undefined,
-  });
+  const transporter = createTransport(config);
 
   const noteBlock = input.moderatorNote?.trim()
     ? `\nModerator note:\n${input.moderatorNote.trim()}\n`
     : "";
 
   await transporter.sendMail({
-    from: String(process.env.SMTP_FROM),
+    from: formatFrom(config),
     to: input.to,
     subject: `Oasis CI: fix review declined for ${input.domain}`,
     text: [
@@ -155,25 +172,16 @@ export async function sendOwnerFixVerifiedEmail(input: {
   domain: string;
   exposureId: string;
 }) {
-  if (!isEmailConfigured()) {
-    console.warn(`SMTP not configured. Fix verified for ${input.exposureId}; owner ${input.to}.`);
+  const config = readMailConfig();
+  if (!config) {
+    console.warn(`Mail not configured. Fix verified for ${input.exposureId}; owner ${input.to}.`);
     return;
   }
 
-  const host = String(process.env.SMTP_HOST);
-  const port = Number(process.env.SMTP_PORT ?? 587);
-  const secure = String(process.env.SMTP_SECURE ?? "false").toLowerCase() === "true";
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-  const transporter = nodemailer.createTransport({
-    host,
-    port,
-    secure,
-    auth: user && pass ? { user, pass } : undefined,
-  });
+  const transporter = createTransport(config);
 
   await transporter.sendMail({
-    from: String(process.env.SMTP_FROM),
+    from: formatFrom(config),
     to: input.to,
     subject: `Oasis CI: fix verified for ${input.domain}`,
     text: [

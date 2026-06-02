@@ -86,8 +86,18 @@ claimsRouter.post(
       ...state.auditLog,
     ];
     await writeState(state);
-    await sendClaimVerificationEmail({ to: claim.contact, domain, token: claim.token });
-    sendOk(res, claim, "Claim verification code issued.");
+    try {
+      await sendClaimVerificationEmail({ to: claim.contact, domain, token: claim.token });
+      sendOk(res, claim, "Claim verification code issued.");
+    } catch (error) {
+      console.error("Claim email delivery failed; continuing with issued token.", error);
+      console.warn(`Claim code for ${domain} (${claim.contact}): ${claim.token}`);
+      sendOk(
+        res,
+        claim,
+        "Claim started, but email delivery failed. Use the server log verification code and fix SMTP settings.",
+      );
+    }
   },
 );
 
