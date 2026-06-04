@@ -21,11 +21,21 @@ import {
 } from "../services/email.js";
 import { notifyDomainOwner } from "../services/notifications.js";
 import { hasAdminExposureFields, updateExposureRecord } from "../services/exposures.js";
+import { exposureForUser } from "../services/privacy.js";
 import { parseDomain, redactDomain } from "../utils/domains.js";
 import { createId } from "../utils/ids.js";
 import { sendFail, sendOk } from "../utils/responses.js";
 
 export const exposuresRouter = Router();
+
+exposuresRouter.get("/api/exposures/:id", withSession(false), async (req, res) => {
+  const state = await readState();
+  const exposure = state.exposures.find((item) => item.id === req.params.id);
+  if (!exposure) {
+    return sendFail(res, "The selected exposure could not be found.", 404);
+  }
+  sendOk(res, exposureForUser(exposure, req.user, state));
+});
 
 const exposureSchema = z.object({
   exposureId: z.string().min(1).optional(),

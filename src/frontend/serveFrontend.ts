@@ -1,8 +1,9 @@
+import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import express, { type Express, type Request as ExpressRequest, type Response as ExpressResponse } from "express";
 import { env } from "../config/env.js";
-import { appFrontendBuildExists, getAppDistPaths } from "./paths.js";
+import { appFrontendBuildExists, getAppDistPaths, getServerPackageRoot } from "./paths.js";
 
 type SsrFetchHandler = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -10,9 +11,31 @@ type SsrFetchHandler = {
 
 let ssrHandlerPromise: Promise<SsrFetchHandler> | undefined;
 
+function assertSsrBundleResolvable(serverEntry: string) {
+  const assetsDir = path.join(path.dirname(serverEntry), "assets");
+  if (!fs.existsSync(assetsDir)) return;
+
+  const needsH3 = fs.readdirSync(assetsDir).some((file) => {
+    if (!file.endsWith(".js")) return false;
+    const content = fs.readFileSync(path.join(assetsDir, file), "utf8");
+    return /from\s+["']h3-v2["']/.test(content) || /import\s+["']h3-v2["']/.test(content);
+  });
+
+  if (!needsH3) return;
+
+  const ssrModules = path.join(path.dirname(serverEntry), "node_modules", "h3-v2");
+  const rootModules = path.join(getServerPackageRoot(), "node_modules", "h3-v2");
+  if (!fs.existsSync(ssrModules) && !fs.existsSync(rootModules)) {
+    throw new Error(
+      "SSR bundle requires h3-v2. Run `npm install` in oasis-ci-server, or redeploy with `npm run build:deploy` (installs app-dist/server/node_modules).",
+    );
+  }
+}
+
 async function loadSsrHandler(): Promise<SsrFetchHandler> {
   if (!ssrHandlerPromise) {
     const { serverEntry } = getAppDistPaths();
+    assertSsrBundleResolvable(serverEntry);
     const entryUrl = pathToFileURL(serverEntry).href;
     const mod = (await import(entryUrl)) as { default?: SsrFetchHandler };
     const handler = mod.default ?? (mod as unknown as SsrFetchHandler);

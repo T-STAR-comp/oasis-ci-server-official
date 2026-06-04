@@ -5,6 +5,8 @@ import { fileURLToPath } from "node:url";
 const serverRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const source = path.join(serverRoot, "../oasis-ci-app/dist");
 const target = path.join(serverRoot, "app-dist");
+const deployDirs = ["client", "server"];
+const staleDirs = ["tanstack_start_app"];
 
 if (!fs.existsSync(source)) {
   console.error("Missing oasis-ci-app/dist — run `npm run build:app` first.");
@@ -37,8 +39,42 @@ function assertNodeDeployBundle(root) {
   }
 }
 
+function removePathWithRetry(targetPath) {
+  if (!fs.existsSync(targetPath)) return;
+  try {
+    fs.rmSync(targetPath, {
+      recursive: true,
+      force: true,
+      maxRetries: 10,
+      retryDelay: 300,
+    });
+  } catch (error) {
+    const code = error && typeof error === "object" && "code" in error ? error.code : null;
+    if (code === "EBUSY" || code === "EPERM") {
+      console.warn(`Could not remove ${targetPath} (${code}). Continuing with overwrite copy.`);
+      return;
+    }
+    throw error;
+  }
+}
+
 assertNodeDeployBundle(source);
 
-fs.rmSync(target, { recursive: true, force: true });
-fs.cpSync(source, target, { recursive: true });
-console.log(`Copied frontend build to ${target}`);
+fs.mkdirSync(target, { recursive: true });
+
+for (const stale of staleDirs) {
+  removePathWithRetry(path.join(target, stale));
+}
+
+for (const dir of deployDirs) {
+  const src = path.join(source, dir);
+  const dest = path.join(target, dir);
+  if (!fs.existsSync(src)) {
+    console.error(`Missing ${dir}/ in oasis-ci-app/dist — rebuild the frontend first.`);
+    process.exit(1);
+  }
+  removePathWithRetry(dest);
+  fs.cpSync(src, dest, { recursive: true, force: true });
+}
+
+console.log(`Copied frontend build (${deployDirs.join(", ")}) to ${target}`);
