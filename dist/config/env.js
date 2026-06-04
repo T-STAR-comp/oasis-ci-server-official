@@ -61,4 +61,6 @@ export const env = {
     },
     remediationEmail: (process.env.REMEDIATION_EMAIL ?? "remediation@oasisci.com").trim(),
     remediationPhone: (process.env.REMEDIATION_PHONE ?? "").trim(),
+    /** Sliding session lifetime in hours (default 24). */
+    sessionTtlHours: Math.max(1, Number(process.env.SESSION_TTL_HOURS ?? 24)),
 };

@@ -1,14 +1,18 @@
 import { readState } from "../database/stateStore.js";
 import { userNeedsPolicyAcceptance } from "../services/policies.js";
-import { sessions } from "../security/sessions.js";
+import { clearSessionCookie, loadSession } from "../security/sessions.js";
 import { sendFail } from "../utils/responses.js";
 const mutatingMethods = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 const policyExemptPaths = new Set(["/api/policies/accept", "/api/auth/sign-out"]);
 export function withSession(requireCsrf) {
     return async (req, res, next) => {
-        const sessionId = req.signedCookies.oasis_sid;
-        const session = typeof sessionId === "string" ? sessions.get(sessionId) : undefined;
-        req.sessionRecord = session;
+        const sessionId = typeof req.signedCookies.oasis_sid === "string" ? req.signedCookies.oasis_sid : undefined;
+        const hadSessionCookie = Boolean(sessionId);
+        const session = await loadSession(sessionId);
+        if (hadSessionCookie && !session) {
+            clearSessionCookie(res);
+        }
+        req.sessionRecord = session ?? undefined;
         if (session) {
             const state = await readState();
             req.user = state.users.find((item) => item.id === session.userId) ?? null;
@@ -17,7 +21,13 @@ export function withSession(requireCsrf) {
             req.user = null;
         }
         if (requireCsrf && mutatingMethods.has(req.method)) {
-            if (!session || req.header("x-csrf-token") !== session.csrfToken) {
+            if (!session) {
+                const message = hadSessionCookie
+                    ? "Your session expired. Sign in again to continue."
+                    : "Invalid or missing CSRF token.";
+                return sendFail(res, message, 403);
+            }
+            if (req.header("x-csrf-token") !== session.csrfToken) {
                 return sendFail(res, "Invalid or missing CSRF token.", 403);
             }
         }

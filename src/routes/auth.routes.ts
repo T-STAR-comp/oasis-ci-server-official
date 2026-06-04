@@ -3,10 +3,9 @@ import { z } from "zod";
 import { readState, writeState } from "../database/stateStore.js";
 import { withSession } from "../middleware/session.js";
 import { validate } from "../middleware/validate.js";
-import { sessions, setSessionCookie } from "../security/sessions.js";
+import { createUserSession, destroyUserSession } from "../security/sessions.js";
 import { hashPassword, verifyPassword } from "../security/passwords.js";
 import { createAuditEvent } from "../services/audit.js";
-import { createId } from "../utils/ids.js";
 import { sendFail, sendOk } from "../utils/responses.js";
 
 export const authRouter = Router();
@@ -65,10 +64,7 @@ authRouter.post(
       );
     }
 
-    const sessionId = createId("sess");
-    const csrfToken = createId("csrf");
-    sessions.set(sessionId, { userId: user.id, csrfToken, createdAt: Date.now() });
-    setSessionCookie(res, sessionId);
+    const { csrfToken } = await createUserSession(res, user.id);
 
     state.currentUserId = user.id;
     state.auditLog = [
@@ -135,9 +131,9 @@ authRouter.post(
 );
 
 authRouter.post("/api/auth/sign-out", withSession(false), async (req, res) => {
-  const sessionId = req.signedCookies.oasis_sid;
-  if (sessionId) sessions.delete(sessionId);
-  res.clearCookie("oasis_sid");
+  const sessionId =
+    typeof req.signedCookies.oasis_sid === "string" ? req.signedCookies.oasis_sid : undefined;
+  await destroyUserSession(res, sessionId);
 
   const state = await readState();
   state.currentUserId = null;

@@ -3,10 +3,9 @@ import { z } from "zod";
 import { readState, writeState } from "../database/stateStore.js";
 import { withSession } from "../middleware/session.js";
 import { validate } from "../middleware/validate.js";
-import { sessions, setSessionCookie } from "../security/sessions.js";
+import { createUserSession, destroyUserSession } from "../security/sessions.js";
 import { hashPassword, verifyPassword } from "../security/passwords.js";
 import { createAuditEvent } from "../services/audit.js";
-import { createId } from "../utils/ids.js";
 import { sendFail, sendOk } from "../utils/responses.js";
 export const authRouter = Router();
 authRouter.post("/api/auth/sign-in", validate(z.object({ email: z.string().email(), password: z.string().min(1) })), async (req, res) => {
@@ -48,10 +47,7 @@ authRouter.post("/api/auth/sign-in", validate(z.object({ email: z.string().email
             ? "That account is waiting for moderator verification."
             : "That account is suspended.", 403);
     }
-    const sessionId = createId("sess");
-    const csrfToken = createId("csrf");
-    sessions.set(sessionId, { userId: user.id, csrfToken, createdAt: Date.now() });
-    setSessionCookie(res, sessionId);
+    const { csrfToken } = await createUserSession(res, user.id);
     state.currentUserId = user.id;
     state.auditLog = [
         createAuditEvent(user.name, "Signed in", user.role, `Opened the ${user.role} workspace.`),
@@ -105,10 +101,8 @@ authRouter.post("/api/auth/profile", withSession(true), validate(z.object({
     sendOk(res, { user: { ...updated, passwordHash: undefined }, csrfToken: req.sessionRecord?.csrfToken }, "Account updated.");
 });
 authRouter.post("/api/auth/sign-out", withSession(false), async (req, res) => {
-    const sessionId = req.signedCookies.oasis_sid;
-    if (sessionId)
-        sessions.delete(sessionId);
-    res.clearCookie("oasis_sid");
+    const sessionId = typeof req.signedCookies.oasis_sid === "string" ? req.signedCookies.oasis_sid : undefined;
+    await destroyUserSession(res, sessionId);
     const state = await readState();
     state.currentUserId = null;
     await writeState(state);

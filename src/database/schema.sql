@@ -167,7 +167,7 @@ CREATE TABLE IF NOT EXISTS audit_events (
 CREATE TABLE IF NOT EXISTS sessions (
   id VARCHAR(40) PRIMARY KEY,
   user_id VARCHAR(40) NOT NULL,
-  csrf_token VARCHAR(40) NOT NULL,
+      csrf_token VARCHAR(64) NOT NULL,
   created_at DATETIME NOT NULL,
   expires_at DATETIME NOT NULL,
   KEY idx_sessions_user_id (user_id),

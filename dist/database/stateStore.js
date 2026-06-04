@@ -42,6 +42,9 @@ export async function initDatabase() {
     await ensureSchemaMigrations();
     const { ensurePlatformSettingsTable } = await import("../services/platformSettingsStore.js");
     await ensurePlatformSettingsTable();
+    const { ensureSessionsTable, pruneExpiredSessions } = await import("../services/sessionStore.js");
+    await ensureSessionsTable();
+    await pruneExpiredSessions();
     await ensureBootstrapAdmin();
 }
 async function readSchemaSql() {
@@ -96,6 +99,15 @@ async function ensureSchemaMigrations() {
         if (Array.isArray(rows) && rows.length === 0) {
             await db.query(`ALTER TABLE users ADD COLUMN ${column.name} ${column.ddl} AFTER password_hash`);
         }
+    }
+    const [csrfTokenColumn] = await db.query(`SELECT CHARACTER_MAXIMUM_LENGTH AS max_len
+     FROM INFORMATION_SCHEMA.COLUMNS
+     WHERE TABLE_SCHEMA = :database AND TABLE_NAME = 'sessions' AND COLUMN_NAME = 'csrf_token'`, { database: env.mysql.database });
+    const csrfMaxLen = Array.isArray(csrfTokenColumn)
+        ? Number(csrfTokenColumn[0]?.max_len ?? 64)
+        : 64;
+    if (csrfMaxLen > 0 && csrfMaxLen < 64) {
+        await db.query("ALTER TABLE sessions MODIFY csrf_token VARCHAR(64) NOT NULL");
     }
     const [recommendationColumn] = await db.query(`SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
      WHERE TABLE_SCHEMA = :database AND TABLE_NAME = 'exposures' AND COLUMN_NAME = 'remediation_recommendation'`, { database: env.mysql.database });

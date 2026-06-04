@@ -7,7 +7,7 @@ import {
 import { readState, writeState } from "../database/stateStore.js";
 import { withSession } from "../middleware/session.js";
 import { validate } from "../middleware/validate.js";
-import { sessions, setSessionCookie } from "../security/sessions.js";
+import { createUserSession } from "../security/sessions.js";
 import { createAuditEvent } from "../services/audit.js";
 import {
   buildClaimlessDomain,
@@ -229,10 +229,7 @@ claimsRouter.post(
       item.id === claim.id ? { ...item, status: "verified" } : item,
     );
     state.currentUserId = ownerTarget;
-    const sessionId = createId("sess");
-    const csrfToken = createId("csrf");
-    sessions.set(sessionId, { userId: ownerTarget, csrfToken, createdAt: Date.now() });
-    setSessionCookie(res, sessionId);
+    const { csrfToken } = await createUserSession(res, ownerTarget);
     await writeState(state);
 
     sendOk(
