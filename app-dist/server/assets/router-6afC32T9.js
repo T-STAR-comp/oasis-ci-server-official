@@ -1,4 +1,4 @@
-import { T as reactExports, v as functionalUpdate$1, b as arraysEqual, i as createLRUCache, G as isPromise, H as isRedirect, F as isNotFound, A as invariant, h as createControlledPromise, $ as rootRouteId, I as isServer$1, f as compileDecodeCharMap, a1 as trimPath, _ as rewriteBasepath, g as composeRewrites, S as processRouteTree, Q as processRouteMasks, Z as resolvePath, d as cleanPath, a3 as trimPathRight, P as parseHref, q as executeRewriteInput, B as isDangerousProtocol, U as redirect, u as findSingleMatch, l as deepEqual, D as DEFAULT_PROTOCOL_ALLOWLIST, c as buildRouteBranch, z as interpolatePath, N as nullReplaceEqualDeep, W as replaceEqualDeep$1, L as last, k as decodePath, s as findFlatMatch, t as findRouteMatch, y as hasKeys, r as executeRewriteOutput, n as encodePathLikeUrl, a2 as trimPathLeft, J as joinPaths, a5 as useRouter, m as dummyMatchContext, M as matchContext, x as getDefaultExportFromCjs, X as requireReactDom, p as exactPathTest, V as removeTrailingSlash, R as React, K as jsxRuntimeExports, E as isModuleNotFoundError, a4 as useHydrated, o as escapeHtml, C as isInlinableStylesheet, w as getAssetCrossOrigin, Y as resolveManifestAssetLink, O as Outlet, a as React$1 } from "./server-Yx9gb1Aq.js";
+import { T as reactExports, v as functionalUpdate$1, b as arraysEqual, i as createLRUCache, G as isPromise, H as isRedirect, F as isNotFound, A as invariant, h as createControlledPromise, $ as rootRouteId, I as isServer$1, f as compileDecodeCharMap, a1 as trimPath, _ as rewriteBasepath, g as composeRewrites, S as processRouteTree, Q as processRouteMasks, Z as resolvePath, d as cleanPath, a3 as trimPathRight, P as parseHref, q as executeRewriteInput, B as isDangerousProtocol, U as redirect, u as findSingleMatch, l as deepEqual, D as DEFAULT_PROTOCOL_ALLOWLIST, c as buildRouteBranch, z as interpolatePath, N as nullReplaceEqualDeep, W as replaceEqualDeep$1, L as last, k as decodePath, s as findFlatMatch, t as findRouteMatch, y as hasKeys, r as executeRewriteOutput, n as encodePathLikeUrl, a2 as trimPathLeft, J as joinPaths, a5 as useRouter, m as dummyMatchContext, M as matchContext, x as getDefaultExportFromCjs, X as requireReactDom, p as exactPathTest, V as removeTrailingSlash, R as React, K as jsxRuntimeExports, E as isModuleNotFoundError, a4 as useHydrated, o as escapeHtml, C as isInlinableStylesheet, w as getAssetCrossOrigin, Y as resolveManifestAssetLink, O as Outlet, a as React$1 } from "./server-DhW9mng5.js";
 var reactUse = reactExports.use;
 function useForwardedRef(ref) {
   const innerRef = reactExports.useRef(null);
@@ -4871,6 +4871,8 @@ async function parseApiResponse(response) {
     data: payload
   };
 }
+const CSRF_ERROR = "Invalid or missing CSRF token.";
+const SESSION_EXPIRED = "Your session expired. Sign in again to continue.";
 const emptyState = {
   currentUserId: null,
   publicSearch: "",
@@ -4905,6 +4907,21 @@ function AppProvider({ children }) {
     csrfRef.current = token;
     setCsrfToken(token);
   }
+  function isCsrfOrSessionAuthError(message) {
+    return message === CSRF_ERROR || message === SESSION_EXPIRED;
+  }
+  async function syncSessionFromServer() {
+    const session = await getJson(apiRoutes.session);
+    if (!session.ok) return false;
+    if (session.data.user) {
+      setCurrentUser(session.data.user);
+      if (session.data.csrfToken) applyCsrfToken(session.data.csrfToken);
+      return true;
+    }
+    setCurrentUser(null);
+    applyCsrfToken(void 0);
+    return false;
+  }
   reactExports.useEffect(() => {
     let cancelled = false;
     Promise.all([
@@ -4926,6 +4943,28 @@ function AppProvider({ children }) {
       cancelled = true;
     };
   }, []);
+  reactExports.useEffect(() => {
+    if (!currentUser) return;
+    const refreshSession = () => {
+      void syncSessionFromServer().then((active) => {
+        if (!active) {
+          setCurrentUser(null);
+          applyCsrfToken(void 0);
+        }
+      });
+    };
+    const intervalId = window.setInterval(refreshSession, 10 * 60 * 1e3);
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        refreshSession();
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => {
+      window.clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [currentUser?.id]);
   const stateWithUiSearch = reactExports.useMemo(
     () => ({ ...state, currentUserId: currentUser?.id ?? null, publicSearch }),
     [currentUser?.id, publicSearch, state]
@@ -4942,19 +4981,38 @@ function AppProvider({ children }) {
     if (bootstrap.ok) {
       setState({ ...bootstrap.data, publicSearch });
     }
-    if (session.ok) {
+    if (session.ok && session.data.user) {
       setCurrentUser(session.data.user);
       applyCsrfToken(session.data.csrfToken);
     }
   }
-  async function ensureCsrfToken() {
-    if (csrfRef.current) return csrfRef.current;
-    const session = await getJson(apiRoutes.session);
-    if (session.ok && session.data.csrfToken) {
-      applyCsrfToken(session.data.csrfToken);
-      return session.data.csrfToken;
+  async function ensureCsrfToken(forceRefresh = false) {
+    if (!forceRefresh && csrfRef.current) return csrfRef.current;
+    const active = await syncSessionFromServer();
+    if (!active) return void 0;
+    return csrfRef.current;
+  }
+  async function postJsonAuthed(url, input, init) {
+    if (!await ensureCsrfToken()) {
+      return { ok: false, message: SESSION_EXPIRED };
     }
-    return void 0;
+    let result = await postJson(url, input, {
+      ...init,
+      headers: { ...{}, ...serverHeaders() }
+    });
+    if (!result.ok && isCsrfOrSessionAuthError(result.message)) {
+      if (await ensureCsrfToken(true)) {
+        result = await postJson(url, input, {
+          ...init,
+          headers: { ...{}, ...serverHeaders() }
+        });
+      }
+    }
+    if (!result.ok && result.message === SESSION_EXPIRED) {
+      setCurrentUser(null);
+      applyCsrfToken(void 0);
+    }
+    return result;
   }
   async function runWithLoading(message, action) {
     setPendingMessage(message);
@@ -4968,15 +5026,29 @@ function AppProvider({ children }) {
   async function mutate(request, fallbackMessage, loadingMessage = fallbackMessage) {
     return runWithLoading(loadingMessage, async () => {
       if (currentUser && !await ensureCsrfToken()) {
-        return { ok: false, message: "Your session expired. Sign in again and retry." };
+        return { ok: false, message: SESSION_EXPIRED };
       }
-      const result = await request().catch((error) => ({
+      const run = async (retryAfterCsrfRefresh) => request(retryAfterCsrfRefresh).catch((error) => ({
         ok: false,
         message: error instanceof Error ? error.message : fallbackMessage
       }));
+      let result = await run(false);
+      if (!result.ok && isCsrfOrSessionAuthError(result.message)) {
+        if (await ensureCsrfToken(true)) {
+          result = await run(true);
+        } else {
+          setCurrentUser(null);
+          applyCsrfToken(void 0);
+          return { ok: false, message: SESSION_EXPIRED };
+        }
+      }
       if (result.ok) {
         await refreshFromServer();
         return { ok: true, message: result.message ?? fallbackMessage };
+      }
+      if (result.message === SESSION_EXPIRED) {
+        setCurrentUser(null);
+        applyCsrfToken(void 0);
       }
       return { ok: false, message: result.message };
     });
@@ -4984,11 +5056,21 @@ function AppProvider({ children }) {
   async function signIn(email, password) {
     return runWithLoading("Signing in...", async () => {
       const result = await postJson(apiRoutes.signIn, { email, password });
-      if (result.ok) {
+      if (result.ok && result.data.user) {
         setCurrentUser(result.data.user);
         applyCsrfToken(result.data.csrfToken);
-        await refreshFromServer();
-        return { ok: true, message: result.message ?? `Signed in as ${result.data.user?.name ?? email}.` };
+        const [bootstrap, session] = await Promise.all([
+          getJson(apiRoutes.bootstrap),
+          getJson(apiRoutes.session)
+        ]);
+        if (bootstrap.ok) {
+          setState({ ...bootstrap.data, publicSearch });
+        }
+        if (session.ok && session.data.user) {
+          setCurrentUser(session.data.user);
+          if (session.data.csrfToken) applyCsrfToken(session.data.csrfToken);
+        }
+        return { ok: true, message: result.message ?? `Signed in as ${result.data.user.name}.` };
       }
       return { ok: false, message: result.message };
     });
@@ -5000,11 +5082,7 @@ function AppProvider({ children }) {
   }
   async function updateAccount(input) {
     return runWithLoading("Saving account...", async () => {
-      const result = await postJson(
-        apiRoutes.profile,
-        input,
-        { headers: serverHeaders() }
-      );
+      const result = await postJsonAuthed(apiRoutes.profile, input);
       if (result.ok) {
         setCurrentUser(result.data.user);
         applyCsrfToken(result.data.csrfToken);
@@ -5016,22 +5094,14 @@ function AppProvider({ children }) {
   }
   async function signOut() {
     return runWithLoading("Signing out...", async () => {
-      await postJson(
-        apiRoutes.signOut,
-        {},
-        { headers: serverHeaders() }
-      );
+      await postJsonAuthed(apiRoutes.signOut, {});
       setCurrentUser(null);
       await refreshFromServer();
     });
   }
   async function resetDemo() {
     return runWithLoading("Resetting platform...", async () => {
-      await postJson(
-        "/api/admin/reset",
-        {},
-        { headers: serverHeaders() }
-      );
+      await postJsonAuthed("/api/admin/reset", {});
       await refreshFromServer();
     });
   }
@@ -5054,14 +5124,10 @@ function AppProvider({ children }) {
   }
   async function acceptPolicies(version) {
     return runWithLoading("Recording policy acceptance...", async () => {
-      if (!await ensureCsrfToken()) {
-        return { ok: false, message: "Your session expired. Sign in again and retry." };
-      }
-      const result = await postJson(
-        "/api/policies/accept",
-        { version, acknowledged: true },
-        { headers: serverHeaders() }
-      );
+      const result = await postJsonAuthed("/api/policies/accept", {
+        version,
+        acknowledged: true
+      });
       if (result.ok) {
         setCurrentUser(result.data.user);
         applyCsrfToken(result.data.csrfToken);
@@ -5096,57 +5162,53 @@ function AppProvider({ children }) {
     startClaim,
     verifyClaim,
     updateExposure: (input) => mutate(
-      () => postJson(apiRoutes.exposures, input, { headers: serverHeaders() }),
+      () => postJsonAuthed(apiRoutes.exposures, input),
       "Exposure updated."
     ),
     requestRescan: (exposureId) => mutate(
-      () => postJson(apiRoutes.rescan(exposureId), {}, { headers: serverHeaders() }),
+      () => postJsonAuthed(apiRoutes.rescan(exposureId), {}),
       "A new scan was queued."
     ),
     submitFinding: (input) => mutate(
-      () => postJson(apiRoutes.submissions, input, { headers: serverHeaders() }),
+      () => postJsonAuthed(apiRoutes.submissions, input),
       "Finding submitted for review.",
       "Submitting finding for review..."
     ),
     reviewSubmission: (input) => mutate(
-      () => postJson(apiRoutes.reviewSubmission, input, { headers: serverHeaders() }),
+      () => postJsonAuthed(apiRoutes.reviewSubmission, input),
       "Submission review saved."
     ),
     resolveFlag: (flagId, status) => mutate(
-      () => postJson(apiRoutes.resolveFlag, { flagId, status }, { headers: serverHeaders() }),
+      () => postJsonAuthed(apiRoutes.resolveFlag, { flagId, status }),
       "Flag updated."
     ),
     flagExposure: (exposureId, reason, options) => mutate(
-      () => postJson(
-        apiRoutes.flags,
-        {
-          exposureId,
-          reason,
-          flagType: options?.flagType,
-          title: options?.title
-        },
-        { headers: serverHeaders() }
-      ),
+      () => postJsonAuthed(apiRoutes.flags, {
+        exposureId,
+        reason,
+        flagType: options?.flagType,
+        title: options?.title
+      }),
       "The flag has been added to the moderator queue."
     ),
     updateUserAccess: (input) => mutate(
-      () => postJson(apiRoutes.users, input, { headers: serverHeaders() }),
+      () => postJsonAuthed(apiRoutes.users, input),
       "User access updated."
     ),
     deleteUser: (userId) => mutate(
-      () => postJson("/api/users/delete", { userId }, { headers: serverHeaders() }),
+      () => postJsonAuthed("/api/users/delete", { userId }),
       "User deleted."
     ),
     addExposure: (input) => mutate(
-      () => postJson(apiRoutes.exposures, input, { headers: serverHeaders() }),
+      () => postJsonAuthed(apiRoutes.exposures, input),
       "Exposure created."
     ),
     editExposure: (input) => mutate(
-      () => postJson(apiRoutes.exposures, input, { headers: serverHeaders() }),
+      () => postJsonAuthed(apiRoutes.exposures, input),
       "Exposure updated."
     ),
     deleteExposure: (exposureId) => mutate(
-      () => postJson(`/api/exposures/${exposureId}/delete`, {}, { headers: serverHeaders() }),
+      () => postJsonAuthed(`/api/exposures/${exposureId}/delete`, {}),
       "Exposure deleted."
     ),
     requestResearcherAccount: (input) => mutate(
@@ -5154,50 +5216,34 @@ function AppProvider({ children }) {
       "Researcher account sent to moderators for verification."
     ),
     createModeratorAccount: (input) => mutate(
-      () => postJson("/api/moderators", input, { headers: serverHeaders() }),
+      () => postJsonAuthed("/api/moderators", input),
       "Moderator account created."
     ),
     verifyExposureRemoval: (exposureId) => mutate(
-      () => postJson(
-        `/api/exposures/${exposureId}/verify-removal`,
-        {},
-        { headers: serverHeaders() }
-      ),
+      () => postJsonAuthed(`/api/exposures/${exposureId}/verify-removal`, {}),
       "Exposure verified and archived."
     ),
     removeDomainFromDirectory: (domain) => mutate(
-      () => postJson("/api/domains/remove", { domain }, { headers: serverHeaders() }),
+      () => postJsonAuthed("/api/domains/remove", { domain }),
       "Domain removed."
     ),
     denyExposureFix: (exposureId, moderatorNote) => mutate(
-      () => postJson(
-        `/api/exposures/${exposureId}/deny-fix`,
-        { moderatorNote },
-        { headers: serverHeaders() }
-      ),
+      () => postJsonAuthed(`/api/exposures/${exposureId}/deny-fix`, { moderatorNote }),
       "Fix declined. Owner notified.",
       "Declining fix and notifying owner..."
     ),
     reverseExposureVerification: (exposureId, moderatorNote) => mutate(
-      () => postJson(
-        `/api/exposures/${exposureId}/reverse-verification`,
-        { moderatorNote },
-        { headers: serverHeaders() }
-      ),
+      () => postJsonAuthed(`/api/exposures/${exposureId}/reverse-verification`, { moderatorNote }),
       "Verification reversed.",
       "Reversing verification..."
     ),
     markNotificationsRead: (notificationIds, markAll) => mutate(
-      () => postJson(
-        "/api/notifications/mark-read",
-        { notificationIds, markAll },
-        { headers: serverHeaders() }
-      ),
+      () => postJsonAuthed("/api/notifications/mark-read", { notificationIds, markAll }),
       "Notifications updated."
     ),
     acceptPolicies,
     updatePlatformSettings: (input) => mutate(
-      () => postJson("/api/admin/platform-settings", input, { headers: serverHeaders() }),
+      () => postJsonAuthed("/api/admin/platform-settings", input),
       "Remediation contact updated."
     ),
     isPending,
@@ -5707,7 +5753,7 @@ function RootLayout() {
     /* @__PURE__ */ jsxRuntimeExports.jsx(SiteFooter, {})
   ] });
 }
-const $$splitComponentImporter$4 = () => import("./submit-DlLtCgve.js");
+const $$splitComponentImporter$4 = () => import("./submit-CSaKAU6m.js");
 const Route$4 = createFileRoute("/submit")({
   head: () => ({
     meta: [{
@@ -5719,7 +5765,7 @@ const Route$4 = createFileRoute("/submit")({
   }),
   component: lazyRouteComponent($$splitComponentImporter$4, "component")
 });
-const $$splitComponentImporter$3 = () => import("./exposures-DXJZ52sG.js");
+const $$splitComponentImporter$3 = () => import("./exposures-DucSllgC.js");
 const Route$3 = createFileRoute("/exposures")({
   head: () => ({
     meta: [{
@@ -5731,7 +5777,7 @@ const Route$3 = createFileRoute("/exposures")({
   }),
   component: lazyRouteComponent($$splitComponentImporter$3, "component")
 });
-const $$splitComponentImporter$2 = () => import("./ethics-CeMSPmOq.js");
+const $$splitComponentImporter$2 = () => import("./ethics-CgCxnmxs.js");
 const Route$2 = createFileRoute("/ethics")({
   head: () => ({
     meta: [{
@@ -11119,7 +11165,7 @@ const DialogDescription = reactExports.forwardRef(({ className, ...props }, ref)
   }
 ));
 DialogDescription.displayName = Description.displayName;
-const $$splitComponentImporter$1 = () => import("./dashboard-DMz6jUra.js");
+const $$splitComponentImporter$1 = () => import("./dashboard-DWo0dxyi.js");
 const Route$1 = createFileRoute("/dashboard")({
   head: () => ({
     meta: [{
@@ -11137,7 +11183,7 @@ const Route$1 = createFileRoute("/dashboard")({
   }),
   component: lazyRouteComponent($$splitComponentImporter$1, "component")
 });
-const $$splitComponentImporter = () => import("./index-C_bsrwXC.js");
+const $$splitComponentImporter = () => import("./index-El5C3yP0.js");
 const Route2 = createFileRoute("/")({
   head: () => ({
     meta: [{
