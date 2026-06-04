@@ -1,8 +1,8 @@
-import { K as jsxRuntimeExports } from "./server-DhW9mng5.js";
-import { v as severityMeta } from "./router-6afC32T9.js";
+import { jsxs, jsx } from "react/jsx-runtime";
+import { t as severityMeta } from "./router-C-EVOOem.js";
 function SeverityPill({ severity }) {
   const meta = severityMeta[severity];
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+  return /* @__PURE__ */ jsxs(
     "span",
     {
       className: "inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 mono text-[10px] uppercase tracking-wider",
@@ -12,7 +12,7 @@ function SeverityPill({ severity }) {
         backgroundColor: `color-mix(in oklab, ${meta.color} 10%, transparent)`
       },
       children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "h-1.5 w-1.5 rounded-full", style: { backgroundColor: meta.color } }),
+        /* @__PURE__ */ jsx("span", { className: "h-1.5 w-1.5 rounded-full", style: { backgroundColor: meta.color } }),
         meta.label
       ]
     }

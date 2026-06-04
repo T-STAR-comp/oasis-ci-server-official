@@ -1,4 +1,4 @@
-import { S as reactExports, v as functionalUpdate$1, b as arraysEqual, i as createLRUCache, F as isPromise, G as isRedirect, E as isNotFound, A as invariant$1, h as createControlledPromise, _ as rootRouteId, H as isServer$1, f as compileDecodeCharMap, a0 as trimPath, Z as rewriteBasepath, g as composeRewrites, Q as processRouteTree, P as processRouteMasks, Y as resolvePath, d as cleanPath, a2 as trimPathRight, N as parseHref, q as executeRewriteInput, B as isDangerousProtocol, T as redirect, u as findSingleMatch, l as deepEqual$1, D as DEFAULT_PROTOCOL_ALLOWLIST, c as buildRouteBranch, z as interpolatePath, M as nullReplaceEqualDeep, V as replaceEqualDeep$1, K as last$1, k as decodePath, s as findFlatMatch, t as findRouteMatch, y as hasKeys, r as executeRewriteOutput, n as encodePathLikeUrl, a1 as trimPathLeft, I as joinPaths, a4 as useRouter, m as dummyMatchContext, L as matchContext, x as getDefaultExportFromCjs, W as requireReactDom, p as exactPathTest, U as removeTrailingSlash, R as React, J as jsxRuntimeExports, a3 as useHydrated, o as escapeHtml, C as isInlinableStylesheet, w as getAssetCrossOrigin, X as resolveManifestAssetLink, O as Outlet, e as commonjsGlobal, a as React$1 } from "./server-D8vH4vTf.js";
+import { S as reactExports, v as functionalUpdate$1, b as arraysEqual, i as createLRUCache, F as isPromise, G as isRedirect, E as isNotFound, A as invariant$1, h as createControlledPromise, _ as rootRouteId, H as isServer$1, f as compileDecodeCharMap, a0 as trimPath, Z as rewriteBasepath, g as composeRewrites, Q as processRouteTree, P as processRouteMasks, Y as resolvePath, d as cleanPath, a2 as trimPathRight, N as parseHref, q as executeRewriteInput, B as isDangerousProtocol, T as redirect, u as findSingleMatch, l as deepEqual$1, D as DEFAULT_PROTOCOL_ALLOWLIST, c as buildRouteBranch, z as interpolatePath, M as nullReplaceEqualDeep, V as replaceEqualDeep$1, K as last$1, k as decodePath, s as findFlatMatch, t as findRouteMatch, y as hasKeys, r as executeRewriteOutput, n as encodePathLikeUrl, a1 as trimPathLeft, I as joinPaths, a4 as useRouter, m as dummyMatchContext, L as matchContext, x as getDefaultExportFromCjs, W as requireReactDom, p as exactPathTest, U as removeTrailingSlash, R as React, J as jsxRuntimeExports, a3 as useHydrated, o as escapeHtml, C as isInlinableStylesheet, w as getAssetCrossOrigin, X as resolveManifestAssetLink, O as Outlet, e as commonjsGlobal, a as React$1 } from "./server-CAW9M9DD.js";
 import "node:async_hooks";
 import "node:stream/web";
 import "node:stream";
@@ -4634,7 +4634,7 @@ var QueryClientProvider = ({
   }, [client]);
   return /* @__PURE__ */ jsxRuntimeExports.jsx(QueryClientContext.Provider, { value: client, children });
 };
-const appCss = "/assets/styles-DjYOy1EW.css";
+const appCss = "/assets/styles-DFfSZfe2.css";
 const mergeClasses = (...classes) => classes.filter((className, index, array2) => {
   return Boolean(className) && className.trim() !== "" && array2.indexOf(className) === index;
 }).join(" ").trim();
@@ -5007,6 +5007,8 @@ async function parseApiResponse(response) {
     data: payload
   };
 }
+const CSRF_ERROR = "Invalid or missing CSRF token.";
+const SESSION_EXPIRED = "Your session expired. Sign in again to continue.";
 const emptyState = {
   currentUserId: null,
   publicSearch: "",
@@ -5031,6 +5033,7 @@ const AppContext = reactExports.createContext(null);
 function AppProvider({ children }) {
   const [state, setState] = reactExports.useState(emptyState);
   const [currentUser, setCurrentUser] = reactExports.useState(null);
+  const currentUserRef = reactExports.useRef(null);
   const [isHydrated, setIsHydrated] = reactExports.useState(false);
   const [csrfToken, setCsrfToken] = reactExports.useState();
   const csrfRef = reactExports.useRef(void 0);
@@ -5041,6 +5044,38 @@ function AppProvider({ children }) {
     csrfRef.current = token;
     setCsrfToken(token);
   }
+  function setAuthenticatedUser(user) {
+    currentUserRef.current = user;
+    setCurrentUser(user);
+  }
+  function isCsrfOrSessionAuthError(message) {
+    return message === CSRF_ERROR || message === SESSION_EXPIRED;
+  }
+  const refreshAuthState = reactExports.useCallback(
+    async (options) => {
+      const [bootstrap, session] = await Promise.all([
+        getJson(apiRoutes.bootstrap),
+        getJson(apiRoutes.session)
+      ]);
+      if (session.ok && session.data.user) {
+        setAuthenticatedUser(session.data.user);
+        if (session.data.csrfToken) applyCsrfToken(session.data.csrfToken);
+        if (bootstrap.ok) {
+          setState({ ...bootstrap.data, publicSearch });
+        }
+        return true;
+      }
+      if (bootstrap.ok && currentUserRef.current) {
+        setState({ ...bootstrap.data, publicSearch });
+      }
+      if (options?.clearOnMiss) {
+        setAuthenticatedUser(null);
+        applyCsrfToken(void 0);
+      }
+      return false;
+    },
+    [publicSearch]
+  );
   reactExports.useEffect(() => {
     let cancelled = false;
     Promise.all([
@@ -5051,8 +5086,8 @@ function AppProvider({ children }) {
       if (bootstrap.ok) {
         setState({ ...bootstrap.data, publicSearch });
       }
-      if (session.ok) {
-        setCurrentUser(session.data.user);
+      if (session.ok && session.data.user) {
+        setAuthenticatedUser(session.data.user);
         applyCsrfToken(session.data.csrfToken);
       }
     }).finally(() => {
@@ -5062,6 +5097,22 @@ function AppProvider({ children }) {
       cancelled = true;
     };
   }, []);
+  reactExports.useEffect(() => {
+    if (!currentUser) return;
+    const intervalId = window.setInterval(() => {
+      void refreshAuthState();
+    }, 10 * 60 * 1e3);
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        void refreshAuthState();
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => {
+      window.clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [currentUser?.id, refreshAuthState]);
   const stateWithUiSearch = reactExports.useMemo(
     () => ({ ...state, currentUserId: currentUser?.id ?? null, publicSearch }),
     [currentUser?.id, publicSearch, state]
@@ -5071,26 +5122,44 @@ function AppProvider({ children }) {
     return { "x-csrf-token": csrfRef.current };
   }
   async function refreshFromServer() {
-    const [bootstrap, session] = await Promise.all([
-      getJson(apiRoutes.bootstrap),
-      getJson(apiRoutes.session)
-    ]);
-    if (bootstrap.ok) {
-      setState({ ...bootstrap.data, publicSearch });
-    }
-    if (session.ok) {
-      setCurrentUser(session.data.user);
-      applyCsrfToken(session.data.csrfToken);
-    }
+    await refreshAuthState();
   }
-  async function ensureCsrfToken() {
-    if (csrfRef.current) return csrfRef.current;
+  async function ensureCsrfToken(forceRefresh = false) {
+    if (!forceRefresh && csrfRef.current && currentUserRef.current) {
+      return csrfRef.current;
+    }
     const session = await getJson(apiRoutes.session);
-    if (session.ok && session.data.csrfToken) {
-      applyCsrfToken(session.data.csrfToken);
+    if (session.ok && session.data.user) {
+      setAuthenticatedUser(session.data.user);
+      if (session.data.csrfToken) applyCsrfToken(session.data.csrfToken);
       return session.data.csrfToken;
     }
+    if (currentUserRef.current && csrfRef.current) {
+      return csrfRef.current;
+    }
     return void 0;
+  }
+  async function postJsonAuthed(url, input, init) {
+    if (!await ensureCsrfToken()) {
+      return { ok: false, message: SESSION_EXPIRED };
+    }
+    let result = await postJson(url, input, {
+      ...init,
+      headers: { ...{}, ...serverHeaders() }
+    });
+    if (!result.ok && isCsrfOrSessionAuthError(result.message)) {
+      if (await ensureCsrfToken(true)) {
+        result = await postJson(url, input, {
+          ...init,
+          headers: { ...{}, ...serverHeaders() }
+        });
+      }
+    }
+    if (!result.ok && result.message === SESSION_EXPIRED) {
+      setAuthenticatedUser(null);
+      applyCsrfToken(void 0);
+    }
+    return result;
   }
   async function runWithLoading(message, action) {
     setPendingMessage(message);
@@ -5103,30 +5172,51 @@ function AppProvider({ children }) {
   }
   async function mutate(request, fallbackMessage, loadingMessage = fallbackMessage) {
     return runWithLoading(loadingMessage, async () => {
-      if (currentUser && !await ensureCsrfToken()) {
-        return { ok: false, message: "Your session expired. Sign in again and retry." };
+      if (currentUserRef.current && !await ensureCsrfToken()) {
+        return { ok: false, message: SESSION_EXPIRED };
       }
-      const result = await request().catch((error) => ({
+      const run = async (retryAfterCsrfRefresh) => request(retryAfterCsrfRefresh).catch((error) => ({
         ok: false,
         message: error instanceof Error ? error.message : fallbackMessage
       }));
+      let result = await run(false);
+      if (!result.ok && isCsrfOrSessionAuthError(result.message)) {
+        if (await ensureCsrfToken(true)) {
+          result = await run(true);
+        } else {
+          setAuthenticatedUser(null);
+          applyCsrfToken(void 0);
+          return { ok: false, message: SESSION_EXPIRED };
+        }
+      }
       if (result.ok) {
         await refreshFromServer();
         return { ok: true, message: result.message ?? fallbackMessage };
+      }
+      if (result.message === SESSION_EXPIRED) {
+        setAuthenticatedUser(null);
+        applyCsrfToken(void 0);
       }
       return { ok: false, message: result.message };
     });
   }
   async function signIn(email, password) {
     return runWithLoading("Signing in...", async () => {
-      const result = await postJson(apiRoutes.signIn, { email, password });
-      if (result.ok) {
-        setCurrentUser(result.data.user);
-        applyCsrfToken(result.data.csrfToken);
-        await refreshFromServer();
-        return { ok: true, message: result.message ?? `Signed in as ${result.data.user?.name ?? email}.` };
+      const result = await postJson(
+        apiRoutes.signIn,
+        { email, password }
+      );
+      if (!result.ok || !result.data.user) {
+        return { ok: false, message: result.message };
       }
-      return { ok: false, message: result.message };
+      setAuthenticatedUser(result.data.user);
+      applyCsrfToken(result.data.csrfToken);
+      await refreshAuthState();
+      if (!currentUserRef.current) {
+        setAuthenticatedUser(result.data.user);
+        applyCsrfToken(result.data.csrfToken);
+      }
+      return { ok: true, message: result.message ?? `Signed in as ${result.data.user.name}.` };
     });
   }
   async function signInAs(userId) {
@@ -5136,13 +5226,9 @@ function AppProvider({ children }) {
   }
   async function updateAccount(input) {
     return runWithLoading("Saving account...", async () => {
-      const result = await postJson(
-        apiRoutes.profile,
-        input,
-        { headers: serverHeaders() }
-      );
+      const result = await postJsonAuthed(apiRoutes.profile, input);
       if (result.ok) {
-        setCurrentUser(result.data.user);
+        setAuthenticatedUser(result.data.user);
         applyCsrfToken(result.data.csrfToken);
         await refreshFromServer();
         return { ok: true, message: result.message ?? "Account updated." };
@@ -5152,22 +5238,15 @@ function AppProvider({ children }) {
   }
   async function signOut() {
     return runWithLoading("Signing out...", async () => {
-      await postJson(
-        apiRoutes.signOut,
-        {},
-        { headers: serverHeaders() }
-      );
-      setCurrentUser(null);
-      await refreshFromServer();
+      await postJsonAuthed(apiRoutes.signOut, {});
+      setAuthenticatedUser(null);
+      applyCsrfToken(void 0);
+      await refreshAuthState({ clearOnMiss: true });
     });
   }
   async function resetDemo() {
     return runWithLoading("Resetting platform...", async () => {
-      await postJson(
-        "/api/admin/reset",
-        {},
-        { headers: serverHeaders() }
-      );
+      await postJsonAuthed("/api/admin/reset", {});
       await refreshFromServer();
     });
   }
@@ -5190,16 +5269,12 @@ function AppProvider({ children }) {
   }
   async function acceptPolicies(version) {
     return runWithLoading("Recording policy acceptance...", async () => {
-      if (!await ensureCsrfToken()) {
-        return { ok: false, message: "Your session expired. Sign in again and retry." };
-      }
-      const result = await postJson(
-        "/api/policies/accept",
-        { version, acknowledged: true },
-        { headers: serverHeaders() }
-      );
+      const result = await postJsonAuthed("/api/policies/accept", {
+        version,
+        acknowledged: true
+      });
       if (result.ok) {
-        setCurrentUser(result.data.user);
+        setAuthenticatedUser(result.data.user);
         applyCsrfToken(result.data.csrfToken);
         await refreshFromServer();
         return { ok: true, message: result.message ?? "Policies accepted." };
@@ -5211,7 +5286,7 @@ function AppProvider({ children }) {
     return runWithLoading("Verifying ownership...", async () => {
       const result = await postJson(apiRoutes.verifyClaim, input);
       if (result.ok) {
-        setCurrentUser(result.data.user);
+        setAuthenticatedUser(result.data.user);
         applyCsrfToken(result.data.csrfToken);
         await refreshFromServer();
         return { ok: true, message: result.message ?? "Ownership verified." };
@@ -5232,57 +5307,53 @@ function AppProvider({ children }) {
     startClaim,
     verifyClaim,
     updateExposure: (input) => mutate(
-      () => postJson(apiRoutes.exposures, input, { headers: serverHeaders() }),
+      () => postJsonAuthed(apiRoutes.exposures, input),
       "Exposure updated."
     ),
     requestRescan: (exposureId) => mutate(
-      () => postJson(apiRoutes.rescan(exposureId), {}, { headers: serverHeaders() }),
+      () => postJsonAuthed(apiRoutes.rescan(exposureId), {}),
       "A new scan was queued."
     ),
     submitFinding: (input) => mutate(
-      () => postJson(apiRoutes.submissions, input, { headers: serverHeaders() }),
+      () => postJsonAuthed(apiRoutes.submissions, input),
       "Finding submitted for review.",
       "Submitting finding for review..."
     ),
     reviewSubmission: (input) => mutate(
-      () => postJson(apiRoutes.reviewSubmission, input, { headers: serverHeaders() }),
+      () => postJsonAuthed(apiRoutes.reviewSubmission, input),
       "Submission review saved."
     ),
     resolveFlag: (flagId, status) => mutate(
-      () => postJson(apiRoutes.resolveFlag, { flagId, status }, { headers: serverHeaders() }),
+      () => postJsonAuthed(apiRoutes.resolveFlag, { flagId, status }),
       "Flag updated."
     ),
     flagExposure: (exposureId, reason, options) => mutate(
-      () => postJson(
-        apiRoutes.flags,
-        {
-          exposureId,
-          reason,
-          flagType: options?.flagType,
-          title: options?.title
-        },
-        { headers: serverHeaders() }
-      ),
+      () => postJsonAuthed(apiRoutes.flags, {
+        exposureId,
+        reason,
+        flagType: options?.flagType,
+        title: options?.title
+      }),
       "The flag has been added to the moderator queue."
     ),
     updateUserAccess: (input) => mutate(
-      () => postJson(apiRoutes.users, input, { headers: serverHeaders() }),
+      () => postJsonAuthed(apiRoutes.users, input),
       "User access updated."
     ),
     deleteUser: (userId) => mutate(
-      () => postJson("/api/users/delete", { userId }, { headers: serverHeaders() }),
+      () => postJsonAuthed("/api/users/delete", { userId }),
       "User deleted."
     ),
     addExposure: (input) => mutate(
-      () => postJson(apiRoutes.exposures, input, { headers: serverHeaders() }),
+      () => postJsonAuthed(apiRoutes.exposures, input),
       "Exposure created."
     ),
     editExposure: (input) => mutate(
-      () => postJson(apiRoutes.exposures, input, { headers: serverHeaders() }),
+      () => postJsonAuthed(apiRoutes.exposures, input),
       "Exposure updated."
     ),
     deleteExposure: (exposureId) => mutate(
-      () => postJson(`/api/exposures/${exposureId}/delete`, {}, { headers: serverHeaders() }),
+      () => postJsonAuthed(`/api/exposures/${exposureId}/delete`, {}),
       "Exposure deleted."
     ),
     requestResearcherAccount: (input) => mutate(
@@ -5290,50 +5361,34 @@ function AppProvider({ children }) {
       "Researcher account sent to moderators for verification."
     ),
     createModeratorAccount: (input) => mutate(
-      () => postJson("/api/moderators", input, { headers: serverHeaders() }),
+      () => postJsonAuthed("/api/moderators", input),
       "Moderator account created."
     ),
     verifyExposureRemoval: (exposureId) => mutate(
-      () => postJson(
-        `/api/exposures/${exposureId}/verify-removal`,
-        {},
-        { headers: serverHeaders() }
-      ),
+      () => postJsonAuthed(`/api/exposures/${exposureId}/verify-removal`, {}),
       "Exposure verified and archived."
     ),
     removeDomainFromDirectory: (domain) => mutate(
-      () => postJson("/api/domains/remove", { domain }, { headers: serverHeaders() }),
+      () => postJsonAuthed("/api/domains/remove", { domain }),
       "Domain removed."
     ),
     denyExposureFix: (exposureId, moderatorNote) => mutate(
-      () => postJson(
-        `/api/exposures/${exposureId}/deny-fix`,
-        { moderatorNote },
-        { headers: serverHeaders() }
-      ),
+      () => postJsonAuthed(`/api/exposures/${exposureId}/deny-fix`, { moderatorNote }),
       "Fix declined. Owner notified.",
       "Declining fix and notifying owner..."
     ),
     reverseExposureVerification: (exposureId, moderatorNote) => mutate(
-      () => postJson(
-        `/api/exposures/${exposureId}/reverse-verification`,
-        { moderatorNote },
-        { headers: serverHeaders() }
-      ),
+      () => postJsonAuthed(`/api/exposures/${exposureId}/reverse-verification`, { moderatorNote }),
       "Verification reversed.",
       "Reversing verification..."
     ),
     markNotificationsRead: (notificationIds, markAll) => mutate(
-      () => postJson(
-        "/api/notifications/mark-read",
-        { notificationIds, markAll },
-        { headers: serverHeaders() }
-      ),
+      () => postJsonAuthed("/api/notifications/mark-read", { notificationIds, markAll }),
       "Notifications updated."
     ),
     acceptPolicies,
     updatePlatformSettings: (input) => mutate(
-      () => postJson("/api/admin/platform-settings", input, { headers: serverHeaders() }),
+      () => postJsonAuthed("/api/admin/platform-settings", input),
       "Remediation contact updated."
     ),
     isPending,
@@ -38372,6 +38427,7 @@ function AdminWorkspace({ user }) {
     addExposure,
     editExposure,
     deleteExposure,
+    removeDomainFromDirectory,
     createModeratorAccount,
     reverseExposureVerification,
     updatePlatformSettings
@@ -38383,8 +38439,62 @@ function AdminWorkspace({ user }) {
   const [moderatorPassword, setModeratorPassword] = reactExports.useState("");
   const [selectedExposureId, setSelectedExposureId] = reactExports.useState(state.exposures[0]?.id ?? "");
   const [editExposureOpen, setEditExposureOpen] = reactExports.useState(false);
+  const [deleteTarget, setDeleteTarget] = reactExports.useState(null);
+  const [isDeleting, setIsDeleting] = reactExports.useState(false);
+  const [userDeleteTarget, setUserDeleteTarget] = reactExports.useState(null);
+  const [isDeletingUser, setIsDeletingUser] = reactExports.useState(false);
   const selectedExposure = state.exposures.find((exposure) => exposure.id === selectedExposureId);
+  reactExports.useEffect(() => {
+    if (state.exposures.length === 0) {
+      if (selectedExposureId) setSelectedExposureId("");
+      return;
+    }
+    const stillValid = state.exposures.some((exposure) => exposure.id === selectedExposureId);
+    if (!stillValid) {
+      setSelectedExposureId(state.exposures[0].id);
+    }
+  }, [state.exposures, selectedExposureId]);
   const pendingUsers = state.users.filter((candidate) => candidate.status === "pending_review").length;
+  async function confirmDeleteTarget() {
+    if (!deleteTarget || isDeleting) return;
+    setIsDeleting(true);
+    try {
+      if (deleteTarget.kind === "exposure") {
+        const exposureId = deleteTarget.value;
+        const result = await deleteExposure(exposureId);
+        setMessage(result.message);
+        if (selectedExposureId === exposureId) {
+          setSelectedExposureId("");
+        }
+      } else {
+        const domain = deleteTarget.value;
+        const result = await removeDomainFromDirectory(domain);
+        setMessage(result.message);
+        if (selectedExposure?.domain === domain) {
+          setSelectedExposureId("");
+        }
+      }
+      setDeleteTarget(null);
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+  async function confirmDeleteUser() {
+    if (!userDeleteTarget || isDeletingUser) return;
+    if (userDeleteTarget.role === "admin") {
+      setMessage("Admin accounts cannot be deleted.");
+      setUserDeleteTarget(null);
+      return;
+    }
+    setIsDeletingUser(true);
+    try {
+      const result = await deleteUser(userDeleteTarget.id);
+      setMessage(result.message);
+      setUserDeleteTarget(null);
+    } finally {
+      setIsDeletingUser(false);
+    }
+  }
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mx-auto max-w-[1600px] px-6 py-8", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(
       OpsDesk,
@@ -38441,20 +38551,10 @@ function AdminWorkspace({ user }) {
                     setEditExposureOpen(true);
                   },
                   onDeleteExposure: async (exposureId) => {
-                    if (!window.confirm("Are you sure you want to delete this exposure?")) return;
-                    const result = await deleteExposure(exposureId);
-                    setMessage(result.message);
-                    if (selectedExposureId === exposureId) {
-                      setSelectedExposureId("");
-                    }
+                    setDeleteTarget({ kind: "exposure", value: exposureId });
                   },
                   onDeleteDomain: async (domain) => {
-                    if (!window.confirm("Are you sure you want to delete this company profile/domain?")) return;
-                    const result = await removeDomainFromDirectory(domain);
-                    setMessage(result.message);
-                    if (selectedExposure?.domain === domain) {
-                      setSelectedExposureId("");
-                    }
+                    setDeleteTarget({ kind: "domain", value: domain });
                   }
                 }
               ) })
@@ -38486,7 +38586,8 @@ function AdminWorkspace({ user }) {
                   const result = await reverseExposureVerification(selectedExposure.id);
                   setMessage(result.message);
                 }
-              }
+              },
+              selectedExposure.id
             ) : /* @__PURE__ */ jsxRuntimeExports.jsx(
               EmptyState,
               {
@@ -38516,13 +38617,22 @@ function AdminWorkspace({ user }) {
                   UserAccessRow,
                   {
                     user: candidate,
+                    canDelete: candidate.role !== "admin",
                     onUpdate: async (input) => {
                       const result = await updateUserAccess(input);
                       setMessage(result.message);
                     },
                     onDelete: async (userId) => {
-                      const result = await deleteUser(userId);
-                      setMessage(result.message);
+                      const target = state.users.find((entry) => entry.id === userId);
+                      if (!target) {
+                        setMessage("User account not found.");
+                        return;
+                      }
+                      if (target.role === "admin") {
+                        setMessage("Admin accounts cannot be deleted.");
+                        return;
+                      }
+                      setUserDeleteTarget(target);
                     }
                   },
                   candidate.id
@@ -38545,7 +38655,7 @@ function AdminWorkspace({ user }) {
                     await resetDemo();
                     setMessage("Platform state reset.");
                   },
-                  className: "inline-flex w-full items-center justify-center gap-2 rounded-md border border-border px-4 py-2.5 text-sm",
+                  className: "inline-flex w-full items-center justify-center gap-2 rounded-md border border-border bg-muted px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted/80",
                   children: [
                     /* @__PURE__ */ jsxRuntimeExports.jsx(RotateCcw, { className: "h-4 w-4" }),
                     "Reset platform state"
@@ -38647,7 +38757,85 @@ function AdminWorkspace({ user }) {
           }
         }
       ) : null
-    ] }) })
+    ] }) }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      Dialog,
+      {
+        open: deleteTarget !== null,
+        onOpenChange: (open) => {
+          if (!open && !isDeleting) {
+            setDeleteTarget(null);
+          }
+        },
+        children: /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogContent, { className: "max-w-lg", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogHeader, { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTitle, { children: deleteTarget?.kind === "domain" ? "Delete company profile?" : "Delete exposure?" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(DialogDescription, { children: deleteTarget?.kind === "domain" ? `This removes the domain profile for "${deleteTarget.value}" and its linked exposure entries. This action cannot be undone.` : "This permanently deletes this exposure record. This action cannot be undone." })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogFooter, { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              "button",
+              {
+                type: "button",
+                onClick: () => setDeleteTarget(null),
+                disabled: isDeleting,
+                className: "rounded-md border border-border px-4 py-2 text-sm",
+                children: "Cancel"
+              }
+            ),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              "button",
+              {
+                type: "button",
+                onClick: confirmDeleteTarget,
+                disabled: isDeleting || !deleteTarget,
+                className: "rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60",
+                children: isDeleting ? "Deleting..." : "Delete"
+              }
+            )
+          ] })
+        ] })
+      }
+    ),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      Dialog,
+      {
+        open: userDeleteTarget !== null,
+        onOpenChange: (open) => {
+          if (!open && !isDeletingUser) {
+            setUserDeleteTarget(null);
+          }
+        },
+        children: /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogContent, { className: "max-w-lg", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogHeader, { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTitle, { children: "Delete user account?" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(DialogDescription, { children: userDeleteTarget ? `Delete ${userDeleteTarget.name} (${userDeleteTarget.email}). This action cannot be undone.` : "Delete this user account. This action cannot be undone." })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogFooter, { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              "button",
+              {
+                type: "button",
+                onClick: () => setUserDeleteTarget(null),
+                disabled: isDeletingUser,
+                className: "rounded-md border border-border px-4 py-2 text-sm",
+                children: "Cancel"
+              }
+            ),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              "button",
+              {
+                type: "button",
+                onClick: confirmDeleteUser,
+                disabled: isDeletingUser || !userDeleteTarget,
+                className: "rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60",
+                children: isDeletingUser ? "Deleting..." : "Delete user"
+              }
+            )
+          ] })
+        ] })
+      }
+    )
   ] });
 }
 function AdminExposureForm({
@@ -38920,7 +39108,7 @@ function AdminExposureRecordEditor({
     setRemediationRecommendation(exposure.remediationRecommendation ?? "");
     setRemediationPrice(exposure.remediationPrice != null ? String(exposure.remediationPrice) : "");
     setFileCount(exposure.fileCount != null ? String(exposure.fileCount) : "");
-  }, [exposure.id]);
+  }, [exposure]);
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "panel p-6", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground", children: [
       exposure.id,
@@ -39492,6 +39680,7 @@ function FlagCard({
 }
 function UserAccessRow({
   user,
+  canDelete,
   onUpdate,
   onDelete
 }) {
@@ -39549,8 +39738,9 @@ function UserAccessRow({
         {
           type: "button",
           onClick: () => onDelete(user.id),
-          className: "rounded-md border border-destructive/40 px-3 py-2 text-xs text-destructive",
-          children: "Delete"
+          disabled: canDelete === false,
+          className: canDelete === false ? "rounded-md border border-border px-3 py-2 text-xs text-muted-foreground opacity-70" : "rounded-md border border-destructive/40 px-3 py-2 text-xs text-destructive",
+          children: canDelete === false ? "Admin locked" : "Delete"
         }
       )
     ] }),

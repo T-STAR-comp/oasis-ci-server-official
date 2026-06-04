@@ -27,7 +27,7 @@ export async function readSession(sessionId) {
     const db = requirePool();
     const [rows] = await db.query(`SELECT user_id, csrf_token, created_at
      FROM sessions
-     WHERE id = :id AND expires_at > NOW()
+     WHERE id = :id AND expires_at > UTC_TIMESTAMP()
      LIMIT 1`, { id: sessionId });
     const row = rows[0];
     if (!row)
@@ -73,5 +73,5 @@ export async function deleteSession(sessionId) {
 export async function pruneExpiredSessions() {
     await ensureSessionsTable();
     const db = requirePool();
-    await db.query(`DELETE FROM sessions WHERE expires_at <= NOW()`);
+    await db.query(`DELETE FROM sessions WHERE expires_at <= UTC_TIMESTAMP()`);
 }

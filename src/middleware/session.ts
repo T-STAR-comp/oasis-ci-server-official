@@ -15,7 +15,9 @@ export function withSession(requireCsrf: boolean) {
     const hadSessionCookie = Boolean(sessionId);
     const session = await loadSession(sessionId);
 
-    if (hadSessionCookie && !session) {
+    // Only clear stale cookies on mutating requests so background /api/session
+    // checks do not wipe auth while the user switches browser tabs.
+    if (hadSessionCookie && !session && mutatingMethods.has(req.method)) {
       clearSessionCookie(res);
     }
 

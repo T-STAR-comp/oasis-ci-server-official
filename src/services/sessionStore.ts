@@ -33,7 +33,7 @@ export async function readSession(sessionId: string): Promise<SessionRecord | nu
   const [rows] = await db.query(
     `SELECT user_id, csrf_token, created_at
      FROM sessions
-     WHERE id = :id AND expires_at > NOW()
+     WHERE id = :id AND expires_at > UTC_TIMESTAMP()
      LIMIT 1`,
     { id: sessionId },
   );
@@ -87,5 +87,5 @@ export async function deleteSession(sessionId: string) {
 export async function pruneExpiredSessions() {
   await ensureSessionsTable();
   const db = requirePool();
-  await db.query(`DELETE FROM sessions WHERE expires_at <= NOW()`);
+  await db.query(`DELETE FROM sessions WHERE expires_at <= UTC_TIMESTAMP()`);
 }
