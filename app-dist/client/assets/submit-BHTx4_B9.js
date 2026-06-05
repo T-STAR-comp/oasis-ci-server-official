@@ -1,0 +1,1 @@
+import{v as e,P as r,L as n}from"./index-Dvzf7kpq.js";function s(){return e.jsx(r,{title:"Researcher submission form unavailable",children:e.jsx(n,{to:"/dashboard",className:"mt-6 inline-flex rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground",children:"Sign in as owner or admin"})})}export{s as component};

@@ -33,7 +33,20 @@ export function setSessionCookie(res: Response, sessionId: string) {
 }
 
 export function clearSessionCookie(res: Response) {
-  res.clearCookie("oasis_sid", sessionCookieOptions());
+  const options = sessionCookieOptions();
+  res.clearCookie("oasis_sid", options);
+  const { domain: _domain, ...hostOnly } = options;
+  res.clearCookie("oasis_sid", hostOnly);
+
+  try {
+    const host = new URL(env.publicBaseUrl).hostname;
+    if (host !== "localhost" && host !== "127.0.0.1") {
+      const bare = host.startsWith("www.") ? host.slice(4) : host;
+      res.clearCookie("oasis_sid", { ...options, domain: `.${bare}` });
+    }
+  } catch {
+    // ignore
+  }
 }
 
 export async function loadSession(sessionId: string | undefined): Promise<SessionRecord | null> {
@@ -54,6 +67,7 @@ export async function createUserSession(res: Response, userId: string) {
     console.error("[session] Failed to persist session", { userId, sessionId, error });
     throw error;
   }
+  clearSessionCookie(res);
   setSessionCookie(res, sessionId);
   return { sessionId, csrfToken, record };
 }

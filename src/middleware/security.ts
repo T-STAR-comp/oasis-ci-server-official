@@ -8,6 +8,17 @@ import { env } from "../config/env.js";
 
 export function registerSecurityMiddleware(app: Express) {
   app.set("trust proxy", 1);
+  // User-specific JSON must never be revalidated from cache (304 + stripped anonymous payloads).
+  app.set("etag", false);
+  app.use("/api", (_req, res, next) => {
+    res.set({
+      "Cache-Control": "private, no-store, no-cache, must-revalidate",
+      Pragma: "no-cache",
+      Expires: "0",
+      Vary: "Cookie, x-csrf-token",
+    });
+    next();
+  });
   app.use(
     helmet({
       crossOriginResourcePolicy: { policy: "cross-origin" },

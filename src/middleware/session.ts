@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { readState } from "../database/stateStore.js";
 import { userNeedsPolicyAcceptance } from "../services/policies.js";
+import { parseAllSignedSessionIds, requestHadSessionCookie } from "../security/cookieHeader.js";
 import { readSessionByCsrfToken } from "../services/sessionStore.js";
 import { clearSessionCookie, loadSession, setSessionCookie } from "../security/sessions.js";
 import type { UserRole } from "../types/models.js";
@@ -10,11 +11,19 @@ const mutatingMethods = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 const policyExemptPaths = new Set(["/api/policies/accept", "/api/auth/sign-out"]);
 
 async function resolveRequestSession(req: Request, res: Response) {
-  const cookieSessionId =
-    typeof req.signedCookies.oasis_sid === "string" ? req.signedCookies.oasis_sid : undefined;
-  const hadSessionCookie = Boolean(cookieSessionId);
-  let sessionId = cookieSessionId;
-  let session = await loadSession(sessionId);
+  const hadSessionCookie = requestHadSessionCookie(req);
+  const cookieSessionIds = parseAllSignedSessionIds(req);
+  let sessionId: string | undefined;
+  let session = null as Awaited<ReturnType<typeof loadSession>>;
+
+  for (const candidateId of cookieSessionIds) {
+    const candidate = await loadSession(candidateId);
+    if (candidate) {
+      sessionId = candidateId;
+      session = candidate;
+      break;
+    }
+  }
 
   if (!session) {
     const csrfHeader = req.header("x-csrf-token")?.trim();
@@ -23,6 +32,7 @@ async function resolveRequestSession(req: Request, res: Response) {
       if (found) {
         sessionId = found.sessionId;
         session = found.record;
+        clearSessionCookie(res);
         setSessionCookie(res, sessionId);
       }
     }
