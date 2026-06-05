@@ -83,16 +83,7 @@ export const env = {
 
 function resolveCookieDomain(): string | undefined {
   const configured = process.env.COOKIE_DOMAIN?.trim();
-  if (configured) return configured;
-  if (nodeEnv !== "production") return undefined;
-  try {
-    const host = new URL(publicBaseUrl).hostname;
-    if (host === "localhost" || host === "127.0.0.1") return undefined;
-    const bare = host.startsWith("www.") ? host.slice(4) : host;
-    return `.${bare}`;
-  } catch {
-    return undefined;
-  }
+  return configured || undefined;
 }
 
 function resolveCookieSameSite(): "lax" | "none" | "strict" {

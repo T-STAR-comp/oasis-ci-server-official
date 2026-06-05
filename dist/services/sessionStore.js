@@ -22,6 +22,13 @@ export async function ensureSessionsTable() {
     ) ENGINE=InnoDB
   `);
 }
+function mapSessionRow(row) {
+    return {
+        userId: row.user_id,
+        csrfToken: row.csrf_token,
+        createdAt: new Date(row.created_at).getTime(),
+    };
+}
 export async function readSession(sessionId) {
     await ensureSessionsTable();
     const db = requirePool();
@@ -32,11 +39,19 @@ export async function readSession(sessionId) {
     const row = rows[0];
     if (!row)
         return null;
-    return {
-        userId: row.user_id,
-        csrfToken: row.csrf_token,
-        createdAt: new Date(row.created_at).getTime(),
-    };
+    return mapSessionRow(row);
+}
+export async function readSessionByCsrfToken(csrfToken) {
+    await ensureSessionsTable();
+    const db = requirePool();
+    const [rows] = await db.query(`SELECT id, user_id, csrf_token, created_at
+     FROM sessions
+     WHERE csrf_token = :csrf_token AND expires_at > UTC_TIMESTAMP()
+     LIMIT 1`, { csrf_token: csrfToken });
+    const row = rows[0];
+    if (!row)
+        return null;
+    return { sessionId: row.id, record: mapSessionRow(row) };
 }
 export async function writeSession(sessionId, record) {
     await ensureSessionsTable();

@@ -1,4 +1,4 @@
-import { T as reactExports, v as functionalUpdate$1, b as arraysEqual, i as createLRUCache, G as isPromise, H as isRedirect, F as isNotFound, A as invariant, h as createControlledPromise, $ as rootRouteId, I as isServer$1, f as compileDecodeCharMap, a1 as trimPath, _ as rewriteBasepath, g as composeRewrites, S as processRouteTree, Q as processRouteMasks, Z as resolvePath, d as cleanPath, a3 as trimPathRight, P as parseHref, q as executeRewriteInput, B as isDangerousProtocol, U as redirect, u as findSingleMatch, l as deepEqual, D as DEFAULT_PROTOCOL_ALLOWLIST, c as buildRouteBranch, z as interpolatePath, N as nullReplaceEqualDeep, W as replaceEqualDeep$1, L as last, k as decodePath, s as findFlatMatch, t as findRouteMatch, y as hasKeys, r as executeRewriteOutput, n as encodePathLikeUrl, a2 as trimPathLeft, J as joinPaths, a5 as useRouter, m as dummyMatchContext, M as matchContext, x as getDefaultExportFromCjs, X as requireReactDom, p as exactPathTest, V as removeTrailingSlash, R as React, K as jsxRuntimeExports, E as isModuleNotFoundError, a4 as useHydrated, o as escapeHtml, C as isInlinableStylesheet, w as getAssetCrossOrigin, Y as resolveManifestAssetLink, O as Outlet, a as React$1 } from "./server-BhriCNDU.js";
+import { T as reactExports, v as functionalUpdate$1, b as arraysEqual, i as createLRUCache, G as isPromise, H as isRedirect, F as isNotFound, A as invariant, h as createControlledPromise, $ as rootRouteId, I as isServer$1, f as compileDecodeCharMap, a1 as trimPath, _ as rewriteBasepath, g as composeRewrites, S as processRouteTree, Q as processRouteMasks, Z as resolvePath, d as cleanPath, a3 as trimPathRight, P as parseHref, q as executeRewriteInput, B as isDangerousProtocol, U as redirect, u as findSingleMatch, l as deepEqual, D as DEFAULT_PROTOCOL_ALLOWLIST, c as buildRouteBranch, z as interpolatePath, N as nullReplaceEqualDeep, W as replaceEqualDeep$1, L as last, k as decodePath, s as findFlatMatch, t as findRouteMatch, y as hasKeys, r as executeRewriteOutput, n as encodePathLikeUrl, a2 as trimPathLeft, J as joinPaths, a5 as useRouter, m as dummyMatchContext, M as matchContext, x as getDefaultExportFromCjs, X as requireReactDom, p as exactPathTest, V as removeTrailingSlash, R as React, K as jsxRuntimeExports, E as isModuleNotFoundError, a4 as useHydrated, o as escapeHtml, C as isInlinableStylesheet, w as getAssetCrossOrigin, Y as resolveManifestAssetLink, O as Outlet, a as React$1 } from "./server-pvWXqetH.js";
 var reactUse = reactExports.use;
 function useForwardedRef(ref) {
   const innerRef = reactExports.useRef(null);
@@ -4856,6 +4856,13 @@ async function getJson(url, init) {
   const response = await fetch(apiUrl(url), buildFetchInit("GET", init));
   return parseApiResponse(response);
 }
+async function getJsonAuthed(url, csrfToken, init) {
+  const headers = {
+    ...{},
+    ...csrfToken ? { "x-csrf-token": csrfToken } : {}
+  };
+  return getJson(url, { ...init, headers });
+}
 async function parseApiResponse(response) {
   const payload = await response.json().catch(() => null);
   if (payload && typeof payload === "object" && "ok" in payload) {
@@ -4874,6 +4881,7 @@ async function parseApiResponse(response) {
 }
 const CSRF_ERROR = "Invalid or missing CSRF token.";
 const SESSION_EXPIRED = "Your session expired. Sign in again to continue.";
+const SESSION_COOKIE_MISSING = "Your session cookie was not sent with this request. Sign in again to continue.";
 const emptyState = {
   currentUserId: null,
   publicSearch: "",
@@ -4914,15 +4922,24 @@ function AppProvider({ children }) {
     setCurrentUser(user);
   }
   function isCsrfOrSessionAuthError(message) {
-    return message === CSRF_ERROR || message === SESSION_EXPIRED;
+    return message === CSRF_ERROR || message === SESSION_EXPIRED || message === SESSION_COOKIE_MISSING;
   }
+  const fetchAuthedJson = reactExports.useCallback(async (url) => {
+    await ensureCsrfToken();
+    let result = await getJsonAuthed(url, csrfRef.current);
+    if (!result.ok && isCsrfOrSessionAuthError(result.message) && await ensureCsrfToken(true)) {
+      result = await getJsonAuthed(url, csrfRef.current);
+    }
+    return result;
+  }, []);
   const refreshAuthState = reactExports.useCallback(
     async (options) => {
-      const session = await getJson(apiRoutes.session);
+      await ensureCsrfToken();
+      const session = await getJsonAuthed(apiRoutes.session, csrfRef.current);
       if (session.ok && session.data.user) {
         setAuthenticatedUser(session.data.user);
         if (session.data.csrfToken) applyCsrfToken(session.data.csrfToken);
-        const bootstrap = await getJson(apiRoutes.bootstrap);
+        const bootstrap = await getJsonAuthed(apiRoutes.bootstrap, csrfRef.current);
         if (bootstrap.ok) {
           setState({ ...bootstrap.data, publicSearch });
         }
@@ -4931,7 +4948,7 @@ function AppProvider({ children }) {
       if (options?.clearOnMiss) {
         setAuthenticatedUser(null);
         applyCsrfToken(void 0);
-        const bootstrap = await getJson(apiRoutes.bootstrap);
+        const bootstrap = await getJsonAuthed(apiRoutes.bootstrap, csrfRef.current);
         if (bootstrap.ok) {
           setState({ ...bootstrap.data, publicSearch });
         }
@@ -5260,7 +5277,8 @@ function AppProvider({ children }) {
       "Remediation contact updated."
     ),
     isPending,
-    pendingMessage
+    pendingMessage,
+    fetchAuthedJson
   };
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(AppContext.Provider, { value, children: [
     children,
@@ -5766,7 +5784,7 @@ function RootLayout() {
     /* @__PURE__ */ jsxRuntimeExports.jsx(SiteFooter, {})
   ] });
 }
-const $$splitComponentImporter$4 = () => import("./submit-2Zo8rF9E.js");
+const $$splitComponentImporter$4 = () => import("./submit-876Bb9Y7.js");
 const Route$4 = createFileRoute("/submit")({
   head: () => ({
     meta: [{
@@ -5778,7 +5796,7 @@ const Route$4 = createFileRoute("/submit")({
   }),
   component: lazyRouteComponent($$splitComponentImporter$4, "component")
 });
-const $$splitComponentImporter$3 = () => import("./exposures-BbCZ1y-4.js");
+const $$splitComponentImporter$3 = () => import("./exposures-BCneX56d.js");
 const Route$3 = createFileRoute("/exposures")({
   head: () => ({
     meta: [{
@@ -5790,7 +5808,7 @@ const Route$3 = createFileRoute("/exposures")({
   }),
   component: lazyRouteComponent($$splitComponentImporter$3, "component")
 });
-const $$splitComponentImporter$2 = () => import("./ethics-CfZGq4_H.js");
+const $$splitComponentImporter$2 = () => import("./ethics-sQnOt9_n.js");
 const Route$2 = createFileRoute("/ethics")({
   head: () => ({
     meta: [{
@@ -11178,7 +11196,7 @@ const DialogDescription = reactExports.forwardRef(({ className, ...props }, ref)
   }
 ));
 DialogDescription.displayName = Description.displayName;
-const $$splitComponentImporter$1 = () => import("./dashboard-BnGgxsja.js");
+const $$splitComponentImporter$1 = () => import("./dashboard-D8PIh-V4.js");
 const Route$1 = createFileRoute("/dashboard")({
   head: () => ({
     meta: [{
@@ -11196,7 +11214,7 @@ const Route$1 = createFileRoute("/dashboard")({
   }),
   component: lazyRouteComponent($$splitComponentImporter$1, "component")
 });
-const $$splitComponentImporter = () => import("./index-CdpCRNRW.js");
+const $$splitComponentImporter = () => import("./index-DuhWOe6_.js");
 const Route2 = createFileRoute("/")({
   head: () => ({
     meta: [{
@@ -11256,7 +11274,6 @@ const router = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProper
   getRouter
 }, Symbol.toStringTag, { value: "Module" }));
 export {
-  useNavigate as A,
   Dialog as D,
   Link as L,
   PenTesterDisabledShell as P,
@@ -11276,16 +11293,16 @@ export {
   formatFullDate as l,
   formatShortDate as m,
   getExposurePublicTitle as n,
-  getJson as o,
-  hasAnyRole as p,
-  isDomainClaimed as q,
-  isExposureLockedForOwner as r,
-  isExposureVisibleToPublic as s,
-  penTesterMutedClass as t,
-  roleMeta as u,
-  rolePermissions as v,
-  router as w,
-  severityMeta as x,
-  sortBySeverity as y,
-  useAppContext as z
+  hasAnyRole as o,
+  isDomainClaimed as p,
+  isExposureLockedForOwner as q,
+  isExposureVisibleToPublic as r,
+  penTesterMutedClass as s,
+  roleMeta as t,
+  rolePermissions as u,
+  router as v,
+  severityMeta as w,
+  sortBySeverity as x,
+  useAppContext as y,
+  useNavigate as z
 };

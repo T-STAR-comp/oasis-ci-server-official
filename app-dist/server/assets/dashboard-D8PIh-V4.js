@@ -1,11 +1,11 @@
-import { T as reactExports, K as jsxRuntimeExports } from "./server-BhriCNDU.js";
-import { j as createLucideIcon, h as categoryMeta, z as useAppContext, f as PenTesterUnavailableBanner, t as penTesterMutedClass, P as PenTesterDisabledShell, L as Link, r as isExposureLockedForOwner, k as daysBetween, n as getExposurePublicTitle, R as RoleBadge, D as Dialog, a as DialogContent, d as DialogHeader, e as DialogTitle, b as DialogDescription, c as DialogFooter, m as formatShortDate, l as formatFullDate, o as getJson, g as apiRoutes, u as roleMeta } from "./router-DYl5gDMX.js";
-import { S as SeverityPill } from "./SeverityPill-CdGhhqET.js";
+import { T as reactExports, K as jsxRuntimeExports } from "./server-pvWXqetH.js";
+import { j as createLucideIcon, h as categoryMeta, y as useAppContext, f as PenTesterUnavailableBanner, s as penTesterMutedClass, P as PenTesterDisabledShell, L as Link, q as isExposureLockedForOwner, k as daysBetween, n as getExposurePublicTitle, R as RoleBadge, D as Dialog, a as DialogContent, d as DialogHeader, e as DialogTitle, b as DialogDescription, c as DialogFooter, m as formatShortDate, l as formatFullDate, g as apiRoutes, t as roleMeta } from "./router-DIRQNGDK.js";
+import { S as SeverityPill } from "./SeverityPill-BWVyEXZc.js";
 import { a as POLICIES_OPERATOR, P as POLICIES_EFFECTIVE_DATE, b as POLICIES_TITLE, C as CURRENT_POLICIES_VERSION, c as POLICY_PREAMBLE, d as POLICY_SECTIONS } from "./oasis-ci-policies-D7vl66Ag.js";
-import { P as PoliciesCheckbox } from "./PoliciesCheckbox-Deiwp9tt.js";
-import { F as Flag } from "./flag-uLJunnd_.js";
-import { m as generateCategoricalChart, B as Bar, X as XAxis, Y as YAxis, k as formatAxisMap, R as ResponsiveContainer, b as AreaChart, C as CartesianGrid, g as Tooltip, a as Area } from "./AreaChart-CQQOCIMN.js";
-import { S as ShieldCheck } from "./shield-check-GAWuZ8i-.js";
+import { P as PoliciesCheckbox } from "./PoliciesCheckbox-DhfiSu41.js";
+import { F as Flag } from "./flag-BXEDEKTW.js";
+import { m as generateCategoricalChart, B as Bar, X as XAxis, Y as YAxis, k as formatAxisMap, R as ResponsiveContainer, b as AreaChart, C as CartesianGrid, g as Tooltip, a as Area } from "./AreaChart-D0LPSpvY.js";
+import { S as ShieldCheck } from "./shield-check-CrlZU2Yl.js";
 import "node:async_hooks";
 import "node:stream";
 import "node:stream/web";
@@ -1582,6 +1582,11 @@ function AdminExposureRecordEditor({
   onSave,
   onReverseVerification
 }) {
+  const {
+    currentUser,
+    isHydrated,
+    fetchAuthedJson
+  } = useAppContext();
   const [record, setRecord] = reactExports.useState(exposure);
   const [loadError, setLoadError] = reactExports.useState("");
   const [isLoadingRecord, setIsLoadingRecord] = reactExports.useState(true);
@@ -1624,10 +1629,11 @@ function AdminExposureRecordEditor({
     setFileCount
   };
   reactExports.useEffect(() => {
+    if (!isHydrated || !currentUser) return;
     let cancelled = false;
     setIsLoadingRecord(true);
     setLoadError("");
-    getJson(apiRoutes.exposure(exposure.id)).then((result) => {
+    fetchAuthedJson(apiRoutes.exposure(exposure.id)).then((result) => {
       if (cancelled) return;
       if (result.ok) {
         setRecord(result.data);
@@ -1647,7 +1653,7 @@ function AdminExposureRecordEditor({
     return () => {
       cancelled = true;
     };
-  }, [exposure.id]);
+  }, [currentUser?.id, exposure.id, fetchAuthedJson, isHydrated]);
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "panel p-6", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground", children: [
       record.id,
