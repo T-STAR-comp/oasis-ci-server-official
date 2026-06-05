@@ -26,7 +26,7 @@ export function withSession(requireCsrf) {
             if (!session) {
                 const message = hadSessionCookie
                     ? "Your session expired. Sign in again to continue."
-                    : "Invalid or missing CSRF token.";
+                    : "Your session cookie was not sent with this request. Sign in again to continue.";
                 return sendFail(res, message, 403);
             }
             if (req.header("x-csrf-token") !== session.csrfToken) {

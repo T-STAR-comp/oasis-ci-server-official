@@ -13,23 +13,27 @@ export function sessionCookieMaxAgeMs() {
   return env.sessionTtlHours * 60 * 60 * 1000;
 }
 
+function sessionCookieOptions() {
+  const sameSite = env.cookieSameSite;
+  return {
+    httpOnly: true,
+    secure: env.nodeEnv === "production" || sameSite === "none",
+    sameSite,
+    signed: true,
+    path: "/",
+    ...(env.cookieDomain ? { domain: env.cookieDomain } : {}),
+  } as const;
+}
+
 export function setSessionCookie(res: Response, sessionId: string) {
   res.cookie("oasis_sid", sessionId, {
-    httpOnly: true,
-    secure: env.nodeEnv === "production",
-    sameSite: env.nodeEnv === "production" ? "none" : "lax",
-    signed: true,
+    ...sessionCookieOptions(),
     maxAge: sessionCookieMaxAgeMs(),
   });
 }
 
 export function clearSessionCookie(res: Response) {
-  res.clearCookie("oasis_sid", {
-    httpOnly: true,
-    secure: env.nodeEnv === "production",
-    sameSite: env.nodeEnv === "production" ? "none" : "lax",
-    signed: true,
-  });
+  res.clearCookie("oasis_sid", sessionCookieOptions());
 }
 
 export async function loadSession(sessionId: string | undefined): Promise<SessionRecord | null> {
@@ -44,7 +48,12 @@ export async function createUserSession(res: Response, userId: string) {
   const sessionId = createId("sess");
   const csrfToken = createId("csrf");
   const record: SessionRecord = { userId, csrfToken, createdAt: Date.now() };
-  await writeSession(sessionId, record);
+  try {
+    await writeSession(sessionId, record);
+  } catch (error) {
+    console.error("[session] Failed to persist session", { userId, sessionId, error });
+    throw error;
+  }
   setSessionCookie(res, sessionId);
   return { sessionId, csrfToken, record };
 }

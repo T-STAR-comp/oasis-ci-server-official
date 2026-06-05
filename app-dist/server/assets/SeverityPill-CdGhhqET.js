@@ -1,5 +1,5 @@
-import { K as jsxRuntimeExports } from "./server-B5J_1do6.js";
-import { x as severityMeta } from "./router-B51iN22u.js";
+import { K as jsxRuntimeExports } from "./server-BhriCNDU.js";
+import { x as severityMeta } from "./router-DYl5gDMX.js";
 function SeverityPill({ severity }) {
   const meta = severityMeta[severity];
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(

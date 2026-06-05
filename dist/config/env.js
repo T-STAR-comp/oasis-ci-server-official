@@ -63,4 +63,32 @@ export const env = {
     remediationPhone: (process.env.REMEDIATION_PHONE ?? "").trim(),
     /** Sliding session lifetime in hours (default 24). */
     sessionTtlHours: Math.max(1, Number(process.env.SESSION_TTL_HOURS ?? 24)),
+    /** Optional cookie Domain (e.g. `.oasisafrica.xyz`). Defaults to registrable domain in production. */
+    cookieDomain: resolveCookieDomain(),
+    /** Cookie SameSite attribute. Defaults to `lax` (same-origin friendly). */
+    cookieSameSite: resolveCookieSameSite(),
 };
+function resolveCookieDomain() {
+    const configured = process.env.COOKIE_DOMAIN?.trim();
+    if (configured)
+        return configured;
+    if (nodeEnv !== "production")
+        return undefined;
+    try {
+        const host = new URL(publicBaseUrl).hostname;
+        if (host === "localhost" || host === "127.0.0.1")
+            return undefined;
+        const bare = host.startsWith("www.") ? host.slice(4) : host;
+        return `.${bare}`;
+    }
+    catch {
+        return undefined;
+    }
+}
+function resolveCookieSameSite() {
+    const configured = process.env.COOKIE_SAME_SITE?.trim().toLowerCase();
+    if (configured === "lax" || configured === "none" || configured === "strict") {
+        return configured;
+    }
+    return "lax";
+}
