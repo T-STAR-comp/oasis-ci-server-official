@@ -1,5 +1,5 @@
 import { env } from "../config/env.js";
-import { deleteSession, readSession, touchSession, writeSession, } from "../services/sessionStore.js";
+import { deleteSession, deleteSessionsForUser, readSession, touchSession, writeSession, } from "../services/sessionStore.js";
 import { createId } from "../utils/ids.js";
 export function sessionCookieMaxAgeMs() {
     return env.sessionTtlHours * 60 * 60 * 1000;
@@ -51,6 +51,7 @@ export async function createUserSession(res, userId) {
     const csrfToken = createId("csrf");
     const record = { userId, csrfToken, createdAt: Date.now() };
     try {
+        await deleteSessionsForUser(userId);
         await writeSession(sessionId, record);
     }
     catch (error) {

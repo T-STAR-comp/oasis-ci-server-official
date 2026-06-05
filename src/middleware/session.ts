@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import { readState } from "../database/stateStore.js";
 import { userNeedsPolicyAcceptance } from "../services/policies.js";
 import { parseAllSignedSessionIds, requestHadSessionCookie } from "../security/cookieHeader.js";
-import { readSessionByCsrfToken } from "../services/sessionStore.js";
+import { readSessionByCsrfToken, touchSession } from "../services/sessionStore.js";
 import { clearSessionCookie, loadSession, setSessionCookie } from "../security/sessions.js";
 import type { UserRole } from "../types/models.js";
 import { sendFail } from "../utils/responses.js";
@@ -32,18 +32,18 @@ async function resolveRequestSession(req: Request, res: Response) {
       if (found) {
         sessionId = found.sessionId;
         session = found.record;
-        clearSessionCookie(res);
+        await touchSession(sessionId);
         setSessionCookie(res, sessionId);
       }
     }
   }
 
-  return { sessionId, session, hadSessionCookie };
+  return { sessionId, session, hadSessionCookie, csrfHeader: req.header("x-csrf-token")?.trim() };
 }
 
 export function withSession(requireCsrf: boolean) {
   return async (req: Request, res: Response, next: NextFunction) => {
-    const { sessionId, session, hadSessionCookie } = await resolveRequestSession(req, res);
+    const { sessionId, session, hadSessionCookie, csrfHeader } = await resolveRequestSession(req, res);
 
     // Only clear stale cookies on mutating requests so background /api/session
     // checks do not wipe auth while the user switches browser tabs.
@@ -61,12 +61,14 @@ export function withSession(requireCsrf: boolean) {
 
     if (requireCsrf && mutatingMethods.has(req.method)) {
       if (!session) {
-        const message = hadSessionCookie
-          ? "Your session expired. Sign in again to continue."
-          : "Your session cookie was not sent with this request. Sign in again to continue.";
+        const message = csrfHeader
+          ? "Your sign-in session could not be verified. Sign in again to continue."
+          : hadSessionCookie
+            ? "Your session expired. Sign in again to continue."
+            : "Your session cookie was not sent with this request. Sign in again to continue.";
         return sendFail(res, message, 403);
       }
-      if (req.header("x-csrf-token") !== session.csrfToken) {
+      if (!csrfHeader || csrfHeader !== session.csrfToken) {
         return sendFail(res, "Invalid or missing CSRF token.", 403);
       }
     }

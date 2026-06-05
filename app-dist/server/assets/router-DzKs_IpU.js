@@ -1,4 +1,4 @@
-import { T as reactExports, v as functionalUpdate$1, b as arraysEqual, i as createLRUCache, G as isPromise, H as isRedirect, F as isNotFound, A as invariant, h as createControlledPromise, $ as rootRouteId, I as isServer$1, f as compileDecodeCharMap, a1 as trimPath, _ as rewriteBasepath, g as composeRewrites, S as processRouteTree, Q as processRouteMasks, Z as resolvePath, d as cleanPath, a3 as trimPathRight, P as parseHref, q as executeRewriteInput, B as isDangerousProtocol, U as redirect, u as findSingleMatch, l as deepEqual, D as DEFAULT_PROTOCOL_ALLOWLIST, c as buildRouteBranch, z as interpolatePath, N as nullReplaceEqualDeep, W as replaceEqualDeep$1, L as last, k as decodePath, s as findFlatMatch, t as findRouteMatch, y as hasKeys, r as executeRewriteOutput, n as encodePathLikeUrl, a2 as trimPathLeft, J as joinPaths, a5 as useRouter, m as dummyMatchContext, M as matchContext, x as getDefaultExportFromCjs, X as requireReactDom, p as exactPathTest, V as removeTrailingSlash, R as React, K as jsxRuntimeExports, E as isModuleNotFoundError, a4 as useHydrated, o as escapeHtml, C as isInlinableStylesheet, w as getAssetCrossOrigin, Y as resolveManifestAssetLink, O as Outlet, a as React$1 } from "./server-CCG6iPY2.js";
+import { T as reactExports, v as functionalUpdate$1, b as arraysEqual, i as createLRUCache, G as isPromise, H as isRedirect, F as isNotFound, A as invariant, h as createControlledPromise, $ as rootRouteId, I as isServer$1, f as compileDecodeCharMap, a1 as trimPath, _ as rewriteBasepath, g as composeRewrites, S as processRouteTree, Q as processRouteMasks, Z as resolvePath, d as cleanPath, a3 as trimPathRight, P as parseHref, q as executeRewriteInput, B as isDangerousProtocol, U as redirect, u as findSingleMatch, l as deepEqual, D as DEFAULT_PROTOCOL_ALLOWLIST, c as buildRouteBranch, z as interpolatePath, N as nullReplaceEqualDeep, W as replaceEqualDeep$1, L as last, k as decodePath, s as findFlatMatch, t as findRouteMatch, y as hasKeys, r as executeRewriteOutput, n as encodePathLikeUrl, a2 as trimPathLeft, J as joinPaths, a5 as useRouter, m as dummyMatchContext, M as matchContext, x as getDefaultExportFromCjs, X as requireReactDom, p as exactPathTest, V as removeTrailingSlash, R as React, K as jsxRuntimeExports, E as isModuleNotFoundError, a4 as useHydrated, o as escapeHtml, C as isInlinableStylesheet, w as getAssetCrossOrigin, Y as resolveManifestAssetLink, O as Outlet, a as React$1 } from "./server-7KYsm0cU.js";
 var reactUse = reactExports.use;
 function useForwardedRef(ref) {
   const innerRef = reactExports.useRef(null);
@@ -4883,6 +4883,7 @@ async function parseApiResponse(response) {
 const CSRF_ERROR = "Invalid or missing CSRF token.";
 const SESSION_EXPIRED = "Your session expired. Sign in again to continue.";
 const SESSION_COOKIE_MISSING = "Your session cookie was not sent with this request. Sign in again to continue.";
+const SESSION_VERIFY_FAILED = "Your sign-in session could not be verified. Sign in again to continue.";
 const emptyState = {
   currentUserId: null,
   publicSearch: "",
@@ -4923,7 +4924,7 @@ function AppProvider({ children }) {
     setCurrentUser(user);
   }
   function isCsrfOrSessionAuthError(message) {
-    return message === CSRF_ERROR || message === SESSION_EXPIRED || message === SESSION_COOKIE_MISSING;
+    return message === CSRF_ERROR || message === SESSION_EXPIRED || message === SESSION_COOKIE_MISSING || message === SESSION_VERIFY_FAILED;
   }
   const fetchAuthedJson = reactExports.useCallback(async (url) => {
     await ensureCsrfToken();
@@ -5014,14 +5015,11 @@ function AppProvider({ children }) {
     if (!forceRefresh && csrfRef.current && currentUserRef.current) {
       return csrfRef.current;
     }
-    const session = await getJson(apiRoutes.session);
+    const session = await getJsonAuthed(apiRoutes.session, csrfRef.current);
     if (session.ok && session.data.user) {
       setAuthenticatedUser(session.data.user);
       if (session.data.csrfToken) applyCsrfToken(session.data.csrfToken);
       return session.data.csrfToken;
-    }
-    if (currentUserRef.current && csrfRef.current) {
-      return csrfRef.current;
     }
     return void 0;
   }
@@ -5097,10 +5095,10 @@ function AppProvider({ children }) {
       }
       setAuthenticatedUser(result.data.user);
       applyCsrfToken(result.data.csrfToken);
-      await refreshAuthState();
-      if (!currentUserRef.current) {
-        setAuthenticatedUser(result.data.user);
-        applyCsrfToken(result.data.csrfToken);
+      if (result.data.bootstrap) {
+        setState({ ...result.data.bootstrap, publicSearch });
+      } else {
+        await refreshAuthState();
       }
       return { ok: true, message: result.message ?? `Signed in as ${result.data.user.name}.` };
     });
@@ -5785,7 +5783,7 @@ function RootLayout() {
     /* @__PURE__ */ jsxRuntimeExports.jsx(SiteFooter, {})
   ] });
 }
-const $$splitComponentImporter$4 = () => import("./submit-CQgRfz9Z.js");
+const $$splitComponentImporter$4 = () => import("./submit-BQS5tgEb.js");
 const Route$4 = createFileRoute("/submit")({
   head: () => ({
     meta: [{
@@ -5797,7 +5795,7 @@ const Route$4 = createFileRoute("/submit")({
   }),
   component: lazyRouteComponent($$splitComponentImporter$4, "component")
 });
-const $$splitComponentImporter$3 = () => import("./exposures-Dn3XFaSf.js");
+const $$splitComponentImporter$3 = () => import("./exposures-DWFYVDAx.js");
 const Route$3 = createFileRoute("/exposures")({
   head: () => ({
     meta: [{
@@ -5809,7 +5807,7 @@ const Route$3 = createFileRoute("/exposures")({
   }),
   component: lazyRouteComponent($$splitComponentImporter$3, "component")
 });
-const $$splitComponentImporter$2 = () => import("./ethics-DGJA8PDn.js");
+const $$splitComponentImporter$2 = () => import("./ethics-DV9xhL6z.js");
 const Route$2 = createFileRoute("/ethics")({
   head: () => ({
     meta: [{
@@ -11197,7 +11195,7 @@ const DialogDescription = reactExports.forwardRef(({ className, ...props }, ref)
   }
 ));
 DialogDescription.displayName = Description.displayName;
-const $$splitComponentImporter$1 = () => import("./dashboard-DtJ4QjNQ.js");
+const $$splitComponentImporter$1 = () => import("./dashboard-E3zxzhhh.js");
 const Route$1 = createFileRoute("/dashboard")({
   head: () => ({
     meta: [{
@@ -11215,7 +11213,7 @@ const Route$1 = createFileRoute("/dashboard")({
   }),
   component: lazyRouteComponent($$splitComponentImporter$1, "component")
 });
-const $$splitComponentImporter = () => import("./index-BDKoynqL.js");
+const $$splitComponentImporter = () => import("./index-C80a2Bi6.js");
 const Route2 = createFileRoute("/")({
   head: () => ({
     meta: [{

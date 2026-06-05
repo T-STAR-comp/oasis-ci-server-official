@@ -4,6 +4,8 @@ import { readState, writeState } from "../database/stateStore.js";
 import { withSession } from "../middleware/session.js";
 import { validate } from "../middleware/validate.js";
 import { createUserSession, destroyUserSession } from "../security/sessions.js";
+import { readPlatformSettings } from "../services/platformSettings.js";
+import { sanitizeStateForUser } from "../services/privacy.js";
 import { hashPassword, verifyPassword } from "../security/passwords.js";
 import { createAuditEvent } from "../services/audit.js";
 import { sendFail, sendOk } from "../utils/responses.js";
@@ -73,7 +75,19 @@ authRouter.post(
     ];
     await writeState(state);
 
-    sendOk(res, { user: { ...user, passwordHash: undefined }, csrfToken }, `Signed in as ${user.name}.`);
+    const safeUser = { ...user, passwordHash: undefined };
+    sendOk(
+      res,
+      {
+        user: safeUser,
+        csrfToken,
+        bootstrap: {
+          ...sanitizeStateForUser(state, user),
+          platform: await readPlatformSettings(),
+        },
+      },
+      `Signed in as ${user.name}.`,
+    );
   },
 );
 

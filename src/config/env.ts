@@ -62,8 +62,9 @@ export const env = {
   clientOrigin:
     process.env.CLIENT_ORIGIN ??
     (nodeEnv === "production" ? publicBaseUrl : "http://localhost:5173"),
-  sessionSecret:
-    process.env.SESSION_SECRET ?? "dev-only-change-this-secret-before-production-use",
+  sessionSecret: (
+    process.env.SESSION_SECRET ?? "dev-only-change-this-secret-before-production-use"
+  ).trim(),
   mysql: {
     host: process.env.MYSQL_HOST,
     port: Number(process.env.MYSQL_PORT ?? 3306),

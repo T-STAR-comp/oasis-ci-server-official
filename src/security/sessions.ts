@@ -2,6 +2,7 @@ import type { Response } from "express";
 import { env } from "../config/env.js";
 import {
   deleteSession,
+  deleteSessionsForUser,
   readSession,
   touchSession,
   writeSession,
@@ -62,6 +63,7 @@ export async function createUserSession(res: Response, userId: string) {
   const csrfToken = createId("csrf");
   const record: SessionRecord = { userId, csrfToken, createdAt: Date.now() };
   try {
+    await deleteSessionsForUser(userId);
     await writeSession(sessionId, record);
   } catch (error) {
     console.error("[session] Failed to persist session", { userId, sessionId, error });

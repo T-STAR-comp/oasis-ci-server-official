@@ -356,7 +356,7 @@ export async function writeState(state) {
     try {
         await connection.beginTransaction();
         // Child -> parent delete order to satisfy FKs.
-        await connection.query("DELETE FROM sessions");
+        // NOTE: keep sessions so authenticated requests survive state writes.
         await connection.query("DELETE FROM audit_events");
         await connection.query("DELETE FROM flags");
         await connection.query("DELETE FROM submissions");

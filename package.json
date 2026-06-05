@@ -15,6 +15,7 @@
     "build:all": "npm run build:app && npm run build",
     "bundle:app": "node scripts/bundle-app-dist.mjs",
     "build:deploy": "npm run build:all && npm run bundle:app && node scripts/install-ssr-deps.mjs",
+    "verify:auth": "node scripts/verify-auth-flow.mjs",
     "check": "tsc --noEmit"
   },
   "dependencies": {
@@ -23,6 +24,7 @@
     "@types/express": "^5.0.6",
     "@types/node": "^22.16.5",
     "cookie-parser": "^1.4.7",
+    "cookie-signature": "^1.2.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",

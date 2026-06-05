@@ -1,10 +1,14 @@
 import { env } from "../config/env.js";
 import { requirePool } from "../database/stateStore.js";
-function sessionTtlMs() {
-    return env.sessionTtlHours * 60 * 60 * 1000;
+function sessionTtlHours() {
+    return env.sessionTtlHours;
 }
-function toMysqlDatetime(ms) {
-    return new Date(ms).toISOString().slice(0, 19).replace("T", " ");
+function mapSessionRow(row) {
+    return {
+        userId: row.user_id,
+        csrfToken: row.csrf_token,
+        createdAt: new Date(row.created_at).getTime(),
+    };
 }
 export async function ensureSessionsTable() {
     const db = requirePool();
@@ -17,17 +21,32 @@ export async function ensureSessionsTable() {
       expires_at DATETIME NOT NULL,
       KEY idx_sessions_user_id (user_id),
       KEY idx_sessions_expires_at (expires_at),
-      CONSTRAINT fk_sessions_user_id FOREIGN KEY (user_id) REFERENCES users(id)
-        ON DELETE CASCADE ON UPDATE CASCADE
+      KEY idx_sessions_csrf_token (csrf_token)
     ) ENGINE=InnoDB
   `);
-}
-function mapSessionRow(row) {
-    return {
-        userId: row.user_id,
-        csrfToken: row.csrf_token,
-        createdAt: new Date(row.created_at).getTime(),
-    };
+    const [fkRows] = await db.query(`SELECT CONSTRAINT_NAME AS name
+     FROM information_schema.KEY_COLUMN_USAGE
+     WHERE TABLE_SCHEMA = DATABASE()
+       AND TABLE_NAME = 'sessions'
+       AND REFERENCED_TABLE_NAME = 'users'`);
+    const fkName = fkRows[0]?.name;
+    if (fkName) {
+        await db.query(`ALTER TABLE sessions DROP FOREIGN KEY ${fkName}`);
+    }
+    const [csrfCol] = await db.query(`SELECT COLUMN_TYPE AS type_name
+     FROM information_schema.COLUMNS
+     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'sessions' AND COLUMN_NAME = 'csrf_token'
+     LIMIT 1`);
+    const typeName = csrfCol[0]?.type_name?.toLowerCase() ?? "";
+    if (typeName && !typeName.includes("64")) {
+        await db.query("ALTER TABLE sessions MODIFY csrf_token VARCHAR(64) NOT NULL");
+    }
+    const [csrfIndex] = await db.query(`SELECT COUNT(*) AS count
+     FROM information_schema.STATISTICS
+     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'sessions' AND INDEX_NAME = 'idx_sessions_csrf_token'`);
+    if (Number(csrfIndex[0]?.count ?? 0) === 0) {
+        await db.query("CREATE INDEX idx_sessions_csrf_token ON sessions (csrf_token)");
+    }
 }
 export async function readSession(sessionId) {
     await ensureSessionsTable();
@@ -53,32 +72,39 @@ export async function readSessionByCsrfToken(csrfToken) {
         return null;
     return { sessionId: row.id, record: mapSessionRow(row) };
 }
+export async function deleteSessionsForUser(userId) {
+    await ensureSessionsTable();
+    const db = requirePool();
+    await db.query(`DELETE FROM sessions WHERE user_id = :user_id`, { user_id: userId });
+}
 export async function writeSession(sessionId, record) {
     await ensureSessionsTable();
     const db = requirePool();
-    const now = Date.now();
-    const expiresAt = now + sessionTtlMs();
+    const ttlHours = sessionTtlHours();
     await db.query(`INSERT INTO sessions (id, user_id, csrf_token, created_at, expires_at)
-     VALUES (:id, :user_id, :csrf_token, :created_at, :expires_at)
+     VALUES (
+       :id,
+       :user_id,
+       :csrf_token,
+       UTC_TIMESTAMP(),
+       DATE_ADD(UTC_TIMESTAMP(), INTERVAL :ttl_hours HOUR)
+     )
      ON DUPLICATE KEY UPDATE
        user_id = VALUES(user_id),
        csrf_token = VALUES(csrf_token),
-       expires_at = VALUES(expires_at)`, {
+       expires_at = DATE_ADD(UTC_TIMESTAMP(), INTERVAL :ttl_hours HOUR)`, {
         id: sessionId,
         user_id: record.userId,
         csrf_token: record.csrfToken,
-        created_at: toMysqlDatetime(record.createdAt),
-        expires_at: toMysqlDatetime(expiresAt),
+        ttl_hours: ttlHours,
     });
 }
 export async function touchSession(sessionId) {
     await ensureSessionsTable();
     const db = requirePool();
-    const expiresAt = toMysqlDatetime(Date.now() + sessionTtlMs());
-    await db.query(`UPDATE sessions SET expires_at = :expires_at WHERE id = :id`, {
-        id: sessionId,
-        expires_at: expiresAt,
-    });
+    await db.query(`UPDATE sessions
+     SET expires_at = DATE_ADD(UTC_TIMESTAMP(), INTERVAL :ttl_hours HOUR)
+     WHERE id = :id`, { id: sessionId, ttl_hours: sessionTtlHours() });
 }
 export async function deleteSession(sessionId) {
     await ensureSessionsTable();

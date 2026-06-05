@@ -23,7 +23,7 @@ bootstrapRouter.get("/api/session", withSession(false), async (req, res) => {
     setSessionCookie(res, sessionId);
   }
   const session = {
-    user: req.user ?? null,
+    user: req.user ? { ...req.user, passwordHash: undefined } : null,
     csrfToken: req.sessionRecord?.csrfToken,
   };
   sendOk(res, session);
