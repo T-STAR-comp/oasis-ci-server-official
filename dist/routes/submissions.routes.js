@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
+import { exposureCategoryValues, } from "../types/models.js";
 import { readState, writeState } from "../database/stateStore.js";
 import { requireRole, withSession } from "../middleware/session.js";
 import { validate } from "../middleware/validate.js";
@@ -21,7 +22,7 @@ submissionsRouter.post("/api/submissions", withSession(true), requireRole(["pen_
         return `https://${trimmed}`;
     })
         .pipe(z.string().url()),
-    category: z.enum(["sensitive_data", "open_directory", "admin_panel", "backup_config"]),
+    category: z.enum(exposureCategoryValues),
     severity: z.enum(["critical", "high", "medium", "low", "info"]),
     description: z.string().min(8).max(4000),
     proofOfConcept: z.string().min(8).max(4000),

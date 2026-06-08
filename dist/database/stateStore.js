@@ -114,6 +114,16 @@ async function ensureSchemaMigrations() {
     if (Array.isArray(recommendationColumn) && recommendationColumn.length === 0) {
         await db.query("ALTER TABLE exposures ADD COLUMN remediation_recommendation TEXT NOT NULL DEFAULT '' AFTER internal_note");
     }
+    const exposureCategoryEnum = "ENUM('sensitive_data','open_directory','admin_panel','backup_config','domain_extension','impersonation_risk','expired_ssl')";
+    for (const table of ["exposures", "submissions", "flags"]) {
+        const [categoryColumn] = await db.query(`SELECT COLUMN_TYPE AS column_type
+       FROM INFORMATION_SCHEMA.COLUMNS
+       WHERE TABLE_SCHEMA = :database AND TABLE_NAME = :table AND COLUMN_NAME = 'category'`, { database: env.mysql.database, table });
+        const columnType = categoryColumn[0]?.column_type ?? "";
+        if (columnType && !columnType.includes("expired_ssl")) {
+            await db.query(`ALTER TABLE ${table} MODIFY category ${exposureCategoryEnum} NOT NULL`);
+        }
+    }
     const flagColumns = [
         "domain",
         "exposure_title",
@@ -137,7 +147,7 @@ async function ensureSchemaMigrations() {
                 await db.query("ALTER TABLE flags ADD COLUMN exposure_title VARCHAR(255) NOT NULL DEFAULT '' AFTER domain");
             }
             else if (column === "category") {
-                await db.query("ALTER TABLE flags ADD COLUMN category ENUM('sensitive_data','open_directory','admin_panel','backup_config') NOT NULL DEFAULT 'open_directory' AFTER exposure_title");
+                await db.query("ALTER TABLE flags ADD COLUMN category ENUM('sensitive_data','open_directory','admin_panel','backup_config','domain_extension','impersonation_risk','expired_ssl') NOT NULL DEFAULT 'open_directory' AFTER exposure_title");
             }
             else if (column === "severity") {
                 await db.query("ALTER TABLE flags ADD COLUMN severity ENUM('critical','high','medium','low','info') NOT NULL DEFAULT 'medium' AFTER category");

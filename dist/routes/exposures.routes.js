@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
+import { exposureCategoryValues, } from "../types/models.js";
 import { readState, writeState } from "../database/stateStore.js";
 import { requireRole, withSession } from "../middleware/session.js";
 import { validate } from "../middleware/validate.js";
@@ -30,7 +31,7 @@ const exposureSchema = z.object({
     domain: z.string().optional(),
     companyName: z.string().optional(),
     sector: z.string().optional(),
-    category: z.enum(["sensitive_data", "open_directory", "admin_panel", "backup_config"]).optional(),
+    category: z.enum(exposureCategoryValues).optional(),
     severity: z.enum(["critical", "high", "medium", "low", "info"]).optional(),
     description: z.string().optional(),
     fullUrl: z

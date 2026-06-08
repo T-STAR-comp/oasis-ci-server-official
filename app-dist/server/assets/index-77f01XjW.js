@@ -1,9 +1,9 @@
-import { R as React, x as getDefaultExportFromCjs, T as reactExports, K as jsxRuntimeExports } from "./server-7KYsm0cU.js";
-import { j as createLucideIcon, i as clsx, y as useAppContext, x as sortBySeverity, r as isExposureVisibleToPublic, h as categoryMeta, R as RoleBadge, L as Link, t as roleMeta, u as rolePermissions, n as getExposurePublicTitle, l as formatFullDate } from "./router-DzKs_IpU.js";
-import { S as SeverityPill } from "./SeverityPill-Bo8fWvmd.js";
-import { U as UserRoundCheck, L as Lock } from "./user-round-check-Jx5Bstba.js";
-import { S as ShieldCheck } from "./shield-check-J8oM6x4W.js";
-import { i as filterProps, z as require_baseExtremum, E as require_baseGt, F as require_baseIteratee, H as require_baseLt, u as isFunction, T as Text, y as polarToCartesian, f as Layer, q as getTickClassName, h as adaptEventsOfChild, L as Label, D as Dot, d as Curve, v as isNil, r as getValueByDataKey, S as Shape, A as Animate, n as get, s as interpolateNumber, t as isEqual, w as isNumber, e as LabelList, I as uniqueId, G as Global, x as mathSign, j as findAllByType, c as Cell, o as getMaxRadius, p as getPercentValue, J as warn, m as generateCategoricalChart, l as formatAxisMap, R as ResponsiveContainer, b as AreaChart, C as CartesianGrid, X as XAxis, Y as YAxis, g as Tooltip, a as Area } from "./AreaChart-CMwa5YOW.js";
+import { R as React, x as getDefaultExportFromCjs, T as reactExports, K as jsxRuntimeExports } from "./server-C9gJz6Km.js";
+import { k as createLucideIcon, j as clsx, A as useAppContext, z as sortBySeverity, s as isExposureVisibleToPublic, i as categoryMeta, R as RoleBadge, L as Link, u as roleMeta, v as rolePermissions, o as getExposurePublicTitle, m as formatFullDate, y as siteContact, M as Mail, g as Phone } from "./router-C93ZM2wV.js";
+import { S as SeverityPill } from "./SeverityPill-CD6_Ivlc.js";
+import { U as UserRoundCheck, L as Lock } from "./user-round-check-OBVn_xeA.js";
+import { S as ShieldCheck } from "./shield-check-CUGRV8_x.js";
+import { i as filterProps, z as require_baseExtremum, E as require_baseGt, F as require_baseIteratee, H as require_baseLt, u as isFunction, T as Text, y as polarToCartesian, f as Layer, q as getTickClassName, h as adaptEventsOfChild, L as Label, D as Dot, d as Curve, v as isNil, r as getValueByDataKey, S as Shape, A as Animate, n as get, s as interpolateNumber, t as isEqual, w as isNumber, e as LabelList, I as uniqueId, G as Global, x as mathSign, j as findAllByType, c as Cell, o as getMaxRadius, p as getPercentValue, J as warn, m as generateCategoricalChart, l as formatAxisMap, R as ResponsiveContainer, b as AreaChart, C as CartesianGrid, X as XAxis, Y as YAxis, g as Tooltip, a as Area } from "./AreaChart-Bno5RNoJ.js";
 import "node:async_hooks";
 import "node:stream";
 import "node:stream/web";
@@ -1624,6 +1624,34 @@ function HomePage() {
         ] })
       ] }, exposure.id)) })
     ] }) }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("section", { children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mx-auto max-w-7xl px-6 py-16", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "panel p-8", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "eyebrow", children: "Contact Oasis CI" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "mt-3 display-font text-3xl font-semibold tracking-tight", children: "Reach the team" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-3 max-w-2xl text-sm leading-7 text-muted-foreground", children: "Questions about listings, ownership verification, or remediation support? Use the channels below." }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4", children: [
+        siteContact.emails.map((entry) => /* @__PURE__ */ jsxRuntimeExports.jsxs("a", { href: `mailto:${entry.address}`, className: "rounded-xl border border-border/70 bg-card/50 p-4 transition-colors hover:border-primary/40", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 text-sm font-medium", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Mail, { className: "h-4 w-4 text-primary" }),
+            entry.address
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-2 text-xs text-muted-foreground", children: entry.label })
+        ] }, entry.address)),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("a", { href: `tel:${siteContact.phoneTel}`, className: "rounded-xl border border-border/70 bg-card/50 p-4 transition-colors hover:border-primary/40", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 text-sm font-medium", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Phone, { className: "h-4 w-4 text-primary" }),
+            siteContact.phoneDisplay
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-2 text-xs text-muted-foreground", children: "Phone" })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("a", { href: siteContact.whatsappUrl, target: "_blank", rel: "noreferrer", className: "rounded-xl border border-border/70 bg-card/50 p-4 transition-colors hover:border-primary/40", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 text-sm font-medium", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Phone, { className: "h-4 w-4 text-primary" }),
+            siteContact.phoneDisplay
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-2 text-xs text-muted-foreground", children: "WhatsApp" })
+        ] })
+      ] })
+    ] }) }) }),
     /* @__PURE__ */ jsxRuntimeExports.jsx("section", { children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mx-auto max-w-7xl px-6 py-24", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "panel p-10 text-center", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mx-auto max-w-2xl", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "eyebrow", children: "Workspace ready" }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "mt-4 display-font text-4xl font-semibold tracking-tight md:text-5xl", children: "Claim a domain, review evidence, and simulate the full loop." }),

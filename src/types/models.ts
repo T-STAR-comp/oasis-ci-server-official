@@ -1,9 +1,15 @@
 export type Severity = "critical" | "high" | "medium" | "low" | "info";
-export type ExposureCategory =
-  | "sensitive_data"
-  | "open_directory"
-  | "admin_panel"
-  | "backup_config";
+export const exposureCategoryValues = [
+  "sensitive_data",
+  "open_directory",
+  "admin_panel",
+  "backup_config",
+  "domain_extension",
+  "impersonation_risk",
+  "expired_ssl",
+] as const;
+
+export type ExposureCategory = (typeof exposureCategoryValues)[number];
 export type ExposureStatus =
   | "approved"
   | "pending_review"

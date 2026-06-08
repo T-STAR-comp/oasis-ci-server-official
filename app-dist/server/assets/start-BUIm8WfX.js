@@ -1,5 +1,5 @@
 import { r as renderErrorPage } from "../server.js";
-import { j as createMiddleware } from "./server-7KYsm0cU.js";
+import { j as createMiddleware } from "./server-C9gJz6Km.js";
 import "node:async_hooks";
 import "node:stream";
 import "node:stream/web";

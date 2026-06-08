@@ -1,9 +1,9 @@
-import { T as reactExports, K as jsxRuntimeExports } from "./server-7KYsm0cU.js";
-import { j as createLucideIcon, y as useAppContext, o as hasAnyRole, x as sortBySeverity, r as isExposureVisibleToPublic, S as Search, p as isDomainClaimed, h as categoryMeta, n as getExposurePublicTitle, l as formatFullDate, z as useNavigate } from "./router-DzKs_IpU.js";
-import { P as PoliciesCheckbox } from "./PoliciesCheckbox-CsXa6uIA.js";
-import { S as SeverityPill } from "./SeverityPill-Bo8fWvmd.js";
+import { T as reactExports, K as jsxRuntimeExports } from "./server-C9gJz6Km.js";
+import { k as createLucideIcon, A as useAppContext, p as hasAnyRole, z as sortBySeverity, s as isExposureVisibleToPublic, S as Search, q as isDomainClaimed, i as categoryMeta, o as getExposurePublicTitle, m as formatFullDate, B as useNavigate } from "./router-C93ZM2wV.js";
+import { P as PoliciesCheckbox } from "./PoliciesCheckbox-ByLJRDZB.js";
+import { S as SeverityPill } from "./SeverityPill-CD6_Ivlc.js";
 import { C as CURRENT_POLICIES_VERSION } from "./oasis-ci-policies-D7vl66Ag.js";
-import { S as ShieldCheck } from "./shield-check-J8oM6x4W.js";
+import { S as ShieldCheck } from "./shield-check-CUGRV8_x.js";
 import "node:async_hooks";
 import "node:stream";
 import "node:stream/web";
@@ -57,6 +57,15 @@ function ExposuresPage() {
   }, {
     key: "backup_config",
     label: "Backup and Config"
+  }, {
+    key: "domain_extension",
+    label: "Domain Extension"
+  }, {
+    key: "impersonation_risk",
+    label: "Impersonation Risk"
+  }, {
+    key: "expired_ssl",
+    label: "Expired SSL"
   }, ...canSeePending ? [{
     key: "pending_review",
     label: "Pending Review"

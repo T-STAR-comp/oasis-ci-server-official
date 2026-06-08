@@ -4,6 +4,7 @@ import { z } from "zod";
 import {
   type DomainRecord,
   type Exposure,
+  exposureCategoryValues,
   type ExposureCategory,
   type ExposureStatus,
   type RemediationStatus,
@@ -46,7 +47,7 @@ const exposureSchema = z.object({
   domain: z.string().optional(),
   companyName: z.string().optional(),
   sector: z.string().optional(),
-  category: z.enum(["sensitive_data", "open_directory", "admin_panel", "backup_config"]).optional(),
+  category: z.enum(exposureCategoryValues).optional(),
   severity: z.enum(["critical", "high", "medium", "low", "info"]).optional(),
   description: z.string().optional(),
   fullUrl: z

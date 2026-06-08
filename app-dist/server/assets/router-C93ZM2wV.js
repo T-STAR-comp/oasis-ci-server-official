@@ -1,4 +1,4 @@
-import { T as reactExports, v as functionalUpdate$1, b as arraysEqual, i as createLRUCache, G as isPromise, H as isRedirect, F as isNotFound, A as invariant, h as createControlledPromise, $ as rootRouteId, I as isServer$1, f as compileDecodeCharMap, a1 as trimPath, _ as rewriteBasepath, g as composeRewrites, S as processRouteTree, Q as processRouteMasks, Z as resolvePath, d as cleanPath, a3 as trimPathRight, P as parseHref, q as executeRewriteInput, B as isDangerousProtocol, U as redirect, u as findSingleMatch, l as deepEqual, D as DEFAULT_PROTOCOL_ALLOWLIST, c as buildRouteBranch, z as interpolatePath, N as nullReplaceEqualDeep, W as replaceEqualDeep$1, L as last, k as decodePath, s as findFlatMatch, t as findRouteMatch, y as hasKeys, r as executeRewriteOutput, n as encodePathLikeUrl, a2 as trimPathLeft, J as joinPaths, a5 as useRouter, m as dummyMatchContext, M as matchContext, x as getDefaultExportFromCjs, X as requireReactDom, p as exactPathTest, V as removeTrailingSlash, R as React, K as jsxRuntimeExports, E as isModuleNotFoundError, a4 as useHydrated, o as escapeHtml, C as isInlinableStylesheet, w as getAssetCrossOrigin, Y as resolveManifestAssetLink, O as Outlet, a as React$1 } from "./server-7KYsm0cU.js";
+import { T as reactExports, v as functionalUpdate$1, b as arraysEqual, i as createLRUCache, G as isPromise, H as isRedirect, F as isNotFound, A as invariant, h as createControlledPromise, $ as rootRouteId, I as isServer$1, f as compileDecodeCharMap, a1 as trimPath, _ as rewriteBasepath, g as composeRewrites, S as processRouteTree, Q as processRouteMasks, Z as resolvePath, d as cleanPath, a3 as trimPathRight, P as parseHref, q as executeRewriteInput, B as isDangerousProtocol, U as redirect, u as findSingleMatch, l as deepEqual, D as DEFAULT_PROTOCOL_ALLOWLIST, c as buildRouteBranch, z as interpolatePath, N as nullReplaceEqualDeep, W as replaceEqualDeep$1, L as last, k as decodePath, s as findFlatMatch, t as findRouteMatch, y as hasKeys, r as executeRewriteOutput, n as encodePathLikeUrl, a2 as trimPathLeft, J as joinPaths, a5 as useRouter, m as dummyMatchContext, M as matchContext, x as getDefaultExportFromCjs, X as requireReactDom, p as exactPathTest, V as removeTrailingSlash, R as React, K as jsxRuntimeExports, E as isModuleNotFoundError, a4 as useHydrated, o as escapeHtml, C as isInlinableStylesheet, w as getAssetCrossOrigin, Y as resolveManifestAssetLink, O as Outlet, a as React$1 } from "./server-C9gJz6Km.js";
 var reactUse = reactExports.use;
 function useForwardedRef(ref) {
   const innerRef = reactExports.useRef(null);
@@ -4669,7 +4669,7 @@ var QueryClientProvider = ({
   }, [client]);
   return /* @__PURE__ */ jsxRuntimeExports.jsx(QueryClientContext.Provider, { value: client, children });
 };
-const appCss = "/assets/styles-DXlqXZls.css";
+const appCss = "/assets/styles-CbZy9_AS.css";
 const mergeClasses = (...classes) => classes.filter((className, index, array) => {
   return Boolean(className) && className.trim() !== "" && array.indexOf(className) === index;
 }).join(" ").trim();
@@ -4746,7 +4746,7 @@ const createLucideIcon = (iconName, iconNode) => {
   Component.displayName = toPascalCase(iconName);
   return Component;
 };
-const __iconNode$5 = [
+const __iconNode$7 = [
   ["path", { d: "M10.268 21a2 2 0 0 0 3.464 0", key: "vwvbt9" }],
   [
     "path",
@@ -4756,19 +4756,34 @@ const __iconNode$5 = [
     }
   ]
 ];
-const Bell = createLucideIcon("bell", __iconNode$5);
-const __iconNode$4 = [
+const Bell = createLucideIcon("bell", __iconNode$7);
+const __iconNode$6 = [
   ["path", { d: "m10 17 5-5-5-5", key: "1bsop3" }],
   ["path", { d: "M15 12H3", key: "6jk70r" }],
   ["path", { d: "M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4", key: "u53s6r" }]
 ];
-const LogIn = createLucideIcon("log-in", __iconNode$4);
-const __iconNode$3 = [
+const LogIn = createLucideIcon("log-in", __iconNode$6);
+const __iconNode$5 = [
   ["path", { d: "m16 17 5-5-5-5", key: "1bji2h" }],
   ["path", { d: "M21 12H9", key: "dn1m92" }],
   ["path", { d: "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4", key: "1uf3rs" }]
 ];
-const LogOut = createLucideIcon("log-out", __iconNode$3);
+const LogOut = createLucideIcon("log-out", __iconNode$5);
+const __iconNode$4 = [
+  ["path", { d: "m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7", key: "132q7q" }],
+  ["rect", { x: "2", y: "4", width: "20", height: "16", rx: "2", key: "izxlao" }]
+];
+const Mail = createLucideIcon("mail", __iconNode$4);
+const __iconNode$3 = [
+  [
+    "path",
+    {
+      d: "M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384",
+      key: "9njp5v"
+    }
+  ]
+];
+const Phone = createLucideIcon("phone", __iconNode$3);
 const __iconNode$2 = [
   ["path", { d: "m21 21-4.34-4.34", key: "14j7rj" }],
   ["circle", { cx: "11", cy: "11", r: "8", key: "4ej97u" }]
@@ -5298,7 +5313,10 @@ const categoryMeta = {
   sensitive_data: { label: "Sensitive Data", color: "var(--color-severity-critical)" },
   open_directory: { label: "Open Directory", color: "var(--color-severity-medium)" },
   admin_panel: { label: "Admin Panel", color: "var(--color-severity-high)" },
-  backup_config: { label: "Backup / Config", color: "var(--color-chart-4)" }
+  backup_config: { label: "Backup / Config", color: "var(--color-chart-4)" },
+  domain_extension: { label: "Domain Extension", color: "var(--color-chart-2)" },
+  impersonation_risk: { label: "Impersonation Risk", color: "var(--color-severity-high)" },
+  expired_ssl: { label: "Expired SSL", color: "var(--color-severity-low)" }
 };
 const severityMeta = {
   critical: { label: "Critical", color: "var(--color-severity-critical)" },
@@ -5605,6 +5623,15 @@ function SiteHeader() {
     ] })
   ] }) });
 }
+const siteContact = {
+  emails: [
+    { address: "hello@oasisafrica.xyz", label: "General enquiries" },
+    { address: "oasistechcapital@gmail.com", label: "Business & partnerships" }
+  ],
+  phoneDisplay: "0981128439",
+  phoneTel: "+265981128439",
+  whatsappUrl: "https://wa.me/265981128439"
+};
 function SiteFooter() {
   return /* @__PURE__ */ jsxRuntimeExports.jsx("footer", { className: "mt-20 border-t border-border/70 bg-background", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mx-auto max-w-7xl px-6 py-16", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]", children: [
@@ -5636,22 +5663,60 @@ function SiteFooter() {
           title: "Trust",
           items: [
             { href: "/ethics#policies-outline", label: "Platform policies" },
-            { to: "/ethics", label: "Ethical pledge" },
-            { href: "mailto:owners@oasisci.com", label: "Owner support" }
+            { to: "/ethics", label: "Ethical pledge" }
           ]
         }
       ),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        FooterColumn,
-        {
-          title: "Contact",
-          items: [
-            { href: "mailto:security@oasisci.com", label: "security.txt" },
-            { href: "mailto:moderation@oasisci.com", label: "Moderation desk" },
-            { href: "mailto:research@oasisci.com", label: "Researcher ops", disabled: true }
-          ]
-        }
-      )
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h4", { className: "mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground", children: "Contact" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-4 space-y-3 text-sm text-foreground/85", children: [
+          siteContact.emails.map((entry) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "a",
+            {
+              href: `mailto:${entry.address}`,
+              className: "flex items-start gap-2 transition-colors hover:text-primary",
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Mail, { className: "mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "block", children: entry.address }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-muted-foreground", children: entry.label })
+                ] })
+              ]
+            },
+            entry.address
+          )),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "a",
+            {
+              href: `tel:${siteContact.phoneTel}`,
+              className: "flex items-center gap-2 transition-colors hover:text-primary",
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Phone, { className: "h-4 w-4 shrink-0 text-muted-foreground" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+                  "Phone: ",
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mono", children: siteContact.phoneDisplay })
+                ] })
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "a",
+            {
+              href: siteContact.whatsappUrl,
+              target: "_blank",
+              rel: "noreferrer",
+              className: "flex items-center gap-2 transition-colors hover:text-primary",
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Phone, { className: "h-4 w-4 shrink-0 text-muted-foreground" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+                  "WhatsApp: ",
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mono", children: siteContact.phoneDisplay })
+                ] })
+              ]
+            }
+          )
+        ] })
+      ] })
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-12 flex flex-col gap-3 border-t border-border/70 pt-6 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
@@ -5783,7 +5848,7 @@ function RootLayout() {
     /* @__PURE__ */ jsxRuntimeExports.jsx(SiteFooter, {})
   ] });
 }
-const $$splitComponentImporter$4 = () => import("./submit-BQS5tgEb.js");
+const $$splitComponentImporter$4 = () => import("./submit-DmG7t6lr.js");
 const Route$4 = createFileRoute("/submit")({
   head: () => ({
     meta: [{
@@ -5795,7 +5860,7 @@ const Route$4 = createFileRoute("/submit")({
   }),
   component: lazyRouteComponent($$splitComponentImporter$4, "component")
 });
-const $$splitComponentImporter$3 = () => import("./exposures-DWFYVDAx.js");
+const $$splitComponentImporter$3 = () => import("./exposures-B6tTo2My.js");
 const Route$3 = createFileRoute("/exposures")({
   head: () => ({
     meta: [{
@@ -5807,7 +5872,7 @@ const Route$3 = createFileRoute("/exposures")({
   }),
   component: lazyRouteComponent($$splitComponentImporter$3, "component")
 });
-const $$splitComponentImporter$2 = () => import("./ethics-DV9xhL6z.js");
+const $$splitComponentImporter$2 = () => import("./ethics-asEPrGS9.js");
 const Route$2 = createFileRoute("/ethics")({
   head: () => ({
     meta: [{
@@ -11195,7 +11260,7 @@ const DialogDescription = reactExports.forwardRef(({ className, ...props }, ref)
   }
 ));
 DialogDescription.displayName = Description.displayName;
-const $$splitComponentImporter$1 = () => import("./dashboard-E3zxzhhh.js");
+const $$splitComponentImporter$1 = () => import("./dashboard-C1pCzGxe.js");
 const Route$1 = createFileRoute("/dashboard")({
   head: () => ({
     meta: [{
@@ -11213,7 +11278,7 @@ const Route$1 = createFileRoute("/dashboard")({
   }),
   component: lazyRouteComponent($$splitComponentImporter$1, "component")
 });
-const $$splitComponentImporter = () => import("./index-C80a2Bi6.js");
+const $$splitComponentImporter = () => import("./index-77f01XjW.js");
 const Route2 = createFileRoute("/")({
   head: () => ({
     meta: [{
@@ -11273,8 +11338,11 @@ const router = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProper
   getRouter
 }, Symbol.toStringTag, { value: "Module" }));
 export {
+  useAppContext as A,
+  useNavigate as B,
   Dialog as D,
   Link as L,
+  Mail as M,
   PenTesterDisabledShell as P,
   RoleBadge as R,
   Search as S,
@@ -11284,24 +11352,24 @@ export {
   DialogHeader as d,
   DialogTitle as e,
   PenTesterUnavailableBanner as f,
-  apiRoutes as g,
-  categoryMeta as h,
-  clsx as i,
-  createLucideIcon as j,
-  daysBetween as k,
-  formatFullDate as l,
-  formatShortDate as m,
-  getExposurePublicTitle as n,
-  hasAnyRole as o,
-  isDomainClaimed as p,
-  isExposureLockedForOwner as q,
-  isExposureVisibleToPublic as r,
-  penTesterMutedClass as s,
-  roleMeta as t,
-  rolePermissions as u,
-  router as v,
-  severityMeta as w,
-  sortBySeverity as x,
-  useAppContext as y,
-  useNavigate as z
+  Phone as g,
+  apiRoutes as h,
+  categoryMeta as i,
+  clsx as j,
+  createLucideIcon as k,
+  daysBetween as l,
+  formatFullDate as m,
+  formatShortDate as n,
+  getExposurePublicTitle as o,
+  hasAnyRole as p,
+  isDomainClaimed as q,
+  isExposureLockedForOwner as r,
+  isExposureVisibleToPublic as s,
+  penTesterMutedClass as t,
+  roleMeta as u,
+  rolePermissions as v,
+  router as w,
+  severityMeta as x,
+  siteContact as y,
+  sortBySeverity as z
 };

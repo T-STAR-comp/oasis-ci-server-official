@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import {
   type Exposure,
+  exposureCategoryValues,
   type ExposureCategory,
   type Severity,
   type Submission,
@@ -33,7 +34,7 @@ submissionsRouter.post(
           return `https://${trimmed}`;
         })
         .pipe(z.string().url()),
-      category: z.enum(["sensitive_data", "open_directory", "admin_panel", "backup_config"]),
+      category: z.enum(exposureCategoryValues),
       severity: z.enum(["critical", "high", "medium", "low", "info"]),
       description: z.string().min(8).max(4000),
       proofOfConcept: z.string().min(8).max(4000),
