@@ -1,11 +1,10 @@
-import { T as reactExports, K as jsxRuntimeExports } from "./server-C9gJz6Km.js";
-import { k as createLucideIcon, i as categoryMeta, A as useAppContext, M as Mail, f as PenTesterUnavailableBanner, t as penTesterMutedClass, P as PenTesterDisabledShell, L as Link, r as isExposureLockedForOwner, l as daysBetween, o as getExposurePublicTitle, R as RoleBadge, D as Dialog, a as DialogContent, d as DialogHeader, e as DialogTitle, b as DialogDescription, c as DialogFooter, n as formatShortDate, m as formatFullDate, h as apiRoutes, u as roleMeta } from "./router-C93ZM2wV.js";
-import { S as SeverityPill } from "./SeverityPill-CD6_Ivlc.js";
+import { T as reactExports, K as jsxRuntimeExports } from "./server-Ct2nw_Uh.js";
+import { k as createLucideIcon, w as severityMeta, i as categoryMeta, z as useAppContext, M as Mail, f as PenTesterUnavailableBanner, s as penTesterMutedClass, P as PenTesterDisabledShell, L as Link, q as isExposureLockedForOwner, l as daysBetween, o as getExposurePublicTitle, R as RoleBadge, D as Dialog, a as DialogContent, d as DialogHeader, e as DialogTitle, b as DialogDescription, c as DialogFooter, n as formatShortDate, m as formatFullDate, h as apiRoutes, t as roleMeta } from "./router-Vt4IcVQn.js";
 import { a as POLICIES_OPERATOR, P as POLICIES_EFFECTIVE_DATE, b as POLICIES_TITLE, C as CURRENT_POLICIES_VERSION, c as POLICY_PREAMBLE, d as POLICY_SECTIONS } from "./oasis-ci-policies-D7vl66Ag.js";
-import { P as PoliciesCheckbox } from "./PoliciesCheckbox-ByLJRDZB.js";
-import { F as Flag } from "./flag-iI_FL6Gj.js";
-import { m as generateCategoricalChart, B as Bar, X as XAxis, Y as YAxis, k as formatAxisMap, R as ResponsiveContainer, b as AreaChart, C as CartesianGrid, g as Tooltip, a as Area } from "./AreaChart-Bno5RNoJ.js";
-import { S as ShieldCheck } from "./shield-check-CUGRV8_x.js";
+import { P as PoliciesCheckbox } from "./PoliciesCheckbox-Fu0vBBEn.js";
+import { F as Flag } from "./flag-BYRuIvtW.js";
+import { m as generateCategoricalChart, B as Bar, X as XAxis, Y as YAxis, k as formatAxisMap, R as ResponsiveContainer, b as AreaChart, C as CartesianGrid, g as Tooltip, a as Area } from "./AreaChart-B0f4JJuB.js";
+import { S as ShieldCheck } from "./shield-check-Br7lrIK_.js";
 import "node:async_hooks";
 import "node:stream";
 import "node:stream/web";
@@ -177,6 +176,24 @@ function DenseTable({
       row.id
     )) })
   ] }) });
+}
+function SeverityPill({ severity }) {
+  const meta = severityMeta[severity];
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    "span",
+    {
+      className: "inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 mono text-[10px] uppercase tracking-wider",
+      style: {
+        color: meta.color,
+        borderColor: `color-mix(in oklab, ${meta.color} 35%, transparent)`,
+        backgroundColor: `color-mix(in oklab, ${meta.color} 10%, transparent)`
+      },
+      children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "h-1.5 w-1.5 rounded-full", style: { backgroundColor: meta.color } }),
+        meta.label
+      ]
+    }
+  );
 }
 const severities = ["critical", "high", "medium", "low", "info"];
 function ProblemDetailsForm({

@@ -1,9 +1,8 @@
-import { T as reactExports, K as jsxRuntimeExports } from "./server-C9gJz6Km.js";
-import { k as createLucideIcon, A as useAppContext, p as hasAnyRole, z as sortBySeverity, s as isExposureVisibleToPublic, S as Search, q as isDomainClaimed, i as categoryMeta, o as getExposurePublicTitle, m as formatFullDate, B as useNavigate } from "./router-C93ZM2wV.js";
-import { P as PoliciesCheckbox } from "./PoliciesCheckbox-ByLJRDZB.js";
-import { S as SeverityPill } from "./SeverityPill-CD6_Ivlc.js";
+import { T as reactExports, K as jsxRuntimeExports } from "./server-Ct2nw_Uh.js";
+import { z as useAppContext, y as sortBySeverity, r as isExposureVisibleToPublic, S as Search, p as isDomainClaimed, m as formatFullDate, A as useNavigate } from "./router-Vt4IcVQn.js";
+import { P as PoliciesCheckbox } from "./PoliciesCheckbox-Fu0vBBEn.js";
 import { C as CURRENT_POLICIES_VERSION } from "./oasis-ci-policies-D7vl66Ag.js";
-import { S as ShieldCheck } from "./shield-check-CUGRV8_x.js";
+import { S as ShieldCheck } from "./shield-check-Br7lrIK_.js";
 import "node:async_hooks";
 import "node:stream";
 import "node:stream/web";
@@ -11,28 +10,12 @@ import "util";
 import "crypto";
 import "async_hooks";
 import "stream";
-const __iconNode = [
-  ["path", { d: "M10 5H3", key: "1qgfaw" }],
-  ["path", { d: "M12 19H3", key: "yhmn1j" }],
-  ["path", { d: "M14 3v4", key: "1sua03" }],
-  ["path", { d: "M16 17v4", key: "1q0r14" }],
-  ["path", { d: "M21 12h-9", key: "1o4lsq" }],
-  ["path", { d: "M21 19h-5", key: "1rlt1p" }],
-  ["path", { d: "M21 5h-7", key: "1oszz2" }],
-  ["path", { d: "M8 10v4", key: "tgpxqk" }],
-  ["path", { d: "M8 12H3", key: "a7s4jb" }]
-];
-const SlidersHorizontal = createLucideIcon("sliders-horizontal", __iconNode);
-const severityOptions = ["all", "critical", "high", "medium", "low", "info"];
 function ExposuresPage() {
   const {
     state,
     currentUser,
     setPublicSearch
   } = useAppContext();
-  const [tab, setTab] = reactExports.useState("all");
-  const [severity, setSeverity] = reactExports.useState("all");
-  const [range, setRange] = reactExports.useState("30d");
   const [query, setQuery] = reactExports.useState(state.publicSearch);
   const [claimTarget, setClaimTarget] = reactExports.useState(null);
   reactExports.useEffect(() => {
@@ -41,124 +24,42 @@ function ExposuresPage() {
   reactExports.useEffect(() => {
     setPublicSearch(query);
   }, [query, setPublicSearch]);
-  const canSeePending = hasAnyRole(currentUser?.role, ["moderator", "admin"]);
-  const tabs = [{
-    key: "all",
-    label: "All"
-  }, {
-    key: "sensitive_data",
-    label: "Sensitive Data"
-  }, {
-    key: "open_directory",
-    label: "Open Directories"
-  }, {
-    key: "admin_panel",
-    label: "Admin Panels"
-  }, {
-    key: "backup_config",
-    label: "Backup and Config"
-  }, {
-    key: "domain_extension",
-    label: "Domain Extension"
-  }, {
-    key: "impersonation_risk",
-    label: "Impersonation Risk"
-  }, {
-    key: "expired_ssl",
-    label: "Expired SSL"
-  }, ...canSeePending ? [{
-    key: "pending_review",
-    label: "Pending Review"
-  }] : []];
-  const visibleExposures = sortBySeverity(state.exposures.filter((exposure) => tab === "pending_review" ? canSeePending && exposure.status === "pending_review" : isExposureVisibleToPublic(exposure))).filter((exposure) => {
-    if (tab !== "all" && tab !== "pending_review" && exposure.category !== tab) return false;
-    if (severity !== "all" && exposure.severity !== severity) return false;
-    if (!matchesDateRange(exposure.discoveredAt, range)) return false;
+  const visibleExposures = sortBySeverity(state.exposures.filter((exposure) => isExposureVisibleToPublic(exposure))).filter((exposure) => {
     const normalized = query.trim().toLowerCase();
     if (!normalized) return true;
     return exposure.domain.toLowerCase().includes(normalized) || exposure.companyName.toLowerCase().includes(normalized) || exposure.id.toLowerCase().includes(normalized);
   });
   const suggestions = Array.from(new Set(state.exposures.filter((exposure) => isExposureVisibleToPublic(exposure)).map((exposure) => exposure.domain))).filter((item) => item.toLowerCase().includes(query.trim().toLowerCase())).slice(0, 5);
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "border-b border-border/70", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className: "border-b border-border/70", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mx-auto max-w-7xl px-6 py-12", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-wrap items-end justify-between gap-6", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "eyebrow", children: "Public directory" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "mt-3 display-font text-5xl font-semibold tracking-tight", children: "Exposure listings" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-4 max-w-2xl text-sm leading-7 text-muted-foreground", children: "Owners can claim a domain to unlock the full evidence, while testers and moderators can review pending items inside their authenticated workspaces." })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-full max-w-md", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "relative", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 rounded-full border border-border bg-card/85 px-4 py-3", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(Search, { className: "h-4 w-4 text-muted-foreground" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("input", { value: query, onChange: (event) => setQuery(event.target.value), placeholder: "Search a domain, company, or exposure ID", className: "w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground" })
-          ] }),
-          query.trim() && suggestions.length > 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "absolute left-0 right-0 top-[calc(100%+8px)] z-20 rounded-3xl border border-border bg-card p-2 shadow-2xl", children: suggestions.map((suggestion) => /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: () => setQuery(suggestion), className: "block w-full rounded-2xl px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-accent/70", children: suggestion }, suggestion)) }) : null
-        ] }) })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-10 flex flex-wrap gap-2", children: tabs.map((item) => {
-        const active = tab === item.key;
-        const count = countTabItems(state.exposures, item.key, canSeePending);
-        return /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { onClick: () => setTab(item.key), className: `rounded-full border px-4 py-2 text-sm transition-colors ${active ? "border-primary/45 bg-primary/12 text-foreground" : "border-border bg-card/70 text-muted-foreground hover:text-foreground"}`, children: [
-          item.label,
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ml-2 mono text-[10px] uppercase tracking-[0.2em]", children: count })
-        ] }, item.key);
-      }) })
-    ] }) }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mx-auto grid max-w-7xl gap-8 px-6 py-12 lg:grid-cols-[260px_1fr]", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("aside", { className: "space-y-4", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "panel p-5", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 text-sm font-semibold", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(SlidersHorizontal, { className: "h-4 w-4 text-primary" }),
-            "Filters"
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-5", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground", children: "Severity" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-3 flex flex-wrap gap-2", children: severityOptions.map((item) => {
-              const active = severity === item;
-              return /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: () => setSeverity(item), className: `rounded-full border px-3 py-1.5 text-xs capitalize transition-colors ${active ? "border-primary/45 bg-primary/12 text-foreground" : "border-border text-muted-foreground hover:text-foreground"}`, children: item === "all" ? "All severities" : item }, item);
-            }) })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-6 border-t border-border/70 pt-5", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground", children: "Date range" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-3 space-y-2", children: [{
-              value: "24h",
-              label: "Last 24 hours"
-            }, {
-              value: "7d",
-              label: "Last 7 days"
-            }, {
-              value: "30d",
-              label: "Last 30 days"
-            }, {
-              value: "90d",
-              label: "Last 90 days"
-            }, {
-              value: "all",
-              label: "All time"
-            }].map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { className: "flex items-center gap-3 text-sm text-muted-foreground", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("input", { type: "radio", checked: range === item.value, onChange: () => setRange(item.value), className: "accent-[var(--color-primary)]" }),
-              item.label
-            ] }, item.value)) })
-          ] })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "panel p-5", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(ShieldCheck, { className: "h-5 w-5 text-primary" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "mt-4 display-font text-2xl font-semibold tracking-tight", children: "Is this your website?" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-3 text-sm leading-7 text-muted-foreground", children: "Claim ownership with a one-time email code sent to the company contact details Oasis CI has on file. The owner dashboard stays open while issues are ongoing." }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: () => {
-            const fallback = visibleExposures[0] ?? null;
-            if (fallback) setClaimTarget(fallback);
-          }, className: "mt-4 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground", children: "Start a claim" })
-        ] })
-      ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className: "border-b border-border/70", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mx-auto max-w-7xl px-6 py-12", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-wrap items-end justify-between gap-6", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between text-sm text-muted-foreground", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-            "Showing ",
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-foreground", children: visibleExposures.length }),
-            " listings"
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mono uppercase tracking-[0.2em]", children: "Sorted by severity" })
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "eyebrow", children: "Public directory" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "mt-3 display-font text-5xl font-semibold tracking-tight", children: "Exposure listings" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-4 max-w-2xl text-sm leading-7 text-muted-foreground", children: "Owners can claim a domain to unlock the full evidence and remediation guidance." })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-full max-w-md", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "relative", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 rounded-full border border-border bg-card/85 px-4 py-3", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Search, { className: "h-4 w-4 text-muted-foreground" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("input", { value: query, onChange: (event) => setQuery(event.target.value), placeholder: "Search a domain, company, or exposure ID", className: "w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground" })
+        ] }),
+        query.trim() && suggestions.length > 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "absolute left-0 right-0 top-[calc(100%+8px)] z-20 rounded-3xl border border-border bg-card p-2 shadow-2xl", children: suggestions.map((suggestion) => /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: () => setQuery(suggestion), className: "block w-full rounded-2xl px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-accent/70", children: suggestion }, suggestion)) }) : null
+      ] }) })
+    ] }) }) }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mx-auto grid max-w-7xl gap-8 px-6 py-12 lg:grid-cols-[260px_1fr]", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("aside", { children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "panel p-5", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(ShieldCheck, { className: "h-5 w-5 text-primary" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "mt-4 display-font text-2xl font-semibold tracking-tight", children: "Is this your website?" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-3 text-sm leading-7 text-muted-foreground", children: "Claim ownership with a one-time email code sent to the company contact details Oasis CI has on file. The owner dashboard stays open while issues are ongoing." }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: () => {
+          const fallback = visibleExposures[0] ?? null;
+          if (fallback) setClaimTarget(fallback);
+        }, className: "mt-4 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground", children: "Start a claim" })
+      ] }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-sm text-muted-foreground", children: [
+          "Showing ",
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-foreground", children: visibleExposures.length }),
+          " listings"
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-4 grid gap-4", children: [
           visibleExposures.map((exposure) => {
@@ -166,21 +67,11 @@ function ExposuresPage() {
             return /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { onClick: () => !claimed && setClaimTarget(exposure), disabled: claimed, className: `panel p-5 text-left transition-colors ${claimed ? "cursor-default opacity-80" : "hover:border-primary/35"}`, children: [
               /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between", children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "min-w-0 flex-1", children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-wrap items-center gap-2", children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(SeverityPill, { severity: exposure.severity }),
-                    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "rounded-full border px-2 py-0.5 mono text-[10px] uppercase tracking-[0.2em]", style: {
-                      color: categoryMeta[exposure.category].color,
-                      borderColor: `color-mix(in oklab, ${categoryMeta[exposure.category].color} 35%, transparent)`,
-                      backgroundColor: `color-mix(in oklab, ${categoryMeta[exposure.category].color} 10%, transparent)`
-                    }, children: categoryMeta[exposure.category].label }),
-                    exposure.status === "pending_review" ? /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "rounded-full border border-border px-2 py-0.5 mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground", children: "Pending review" }) : null,
-                    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground", children: exposure.id })
-                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex flex-wrap items-center gap-2", children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground", children: exposure.id }) }),
                   /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-4", children: [
                     /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-lg font-medium", children: exposure.domain }),
                     /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-sm text-muted-foreground", children: exposure.companyName })
                   ] }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("h4", { className: "mt-4 text-base font-semibold text-foreground", children: getExposurePublicTitle(exposure) }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-3 text-xs text-muted-foreground", children: "Remediation guidance and evidence are available only after verified ownership." })
                 ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "shrink-0 rounded-3xl border border-border bg-background/55 px-4 py-3 text-xs text-muted-foreground", children: [
@@ -199,8 +90,8 @@ function ExposuresPage() {
             ] }, exposure.id);
           }),
           visibleExposures.length === 0 ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "panel p-8 text-center", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "display-font text-2xl font-semibold tracking-tight", children: "No exposures matched the current filters." }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-3 text-sm leading-7 text-muted-foreground", children: "Try a broader date range, clear the search query, or switch back to the main tabs for public listings." })
+            /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "display-font text-2xl font-semibold tracking-tight", children: "No exposures matched your search." }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-3 text-sm leading-7 text-muted-foreground", children: "Try a different domain, company name, or exposure ID." })
           ] }) : null
         ] })
       ] })
@@ -352,20 +243,6 @@ function ClaimFlowModal({
       /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: handleVerify, disabled: domainAlreadyClaimed, className: "rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50", children: "Verify and continue" })
     ] })
   ] }) }) });
-}
-function matchesDateRange(date, range) {
-  if (range === "all") return true;
-  const days = range === "24h" ? 1 : range === "7d" ? 7 : range === "30d" ? 30 : 90;
-  const cutoff = Date.now() - days * 24 * 60 * 60 * 1e3;
-  return new Date(date).getTime() >= cutoff;
-}
-function countTabItems(exposures, tab, canSeePending) {
-  return exposures.filter((exposure) => {
-    if (tab === "pending_review") return canSeePending && exposure.status === "pending_review";
-    if (!isExposureVisibleToPublic(exposure)) return false;
-    if (tab === "all") return true;
-    return exposure.category === tab;
-  }).length;
 }
 export {
   ExposuresPage as component

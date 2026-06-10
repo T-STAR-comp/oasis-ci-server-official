@@ -1,4 +1,4 @@
-import { T as reactExports, v as functionalUpdate$1, b as arraysEqual, i as createLRUCache, G as isPromise, H as isRedirect, F as isNotFound, A as invariant, h as createControlledPromise, $ as rootRouteId, I as isServer$1, f as compileDecodeCharMap, a1 as trimPath, _ as rewriteBasepath, g as composeRewrites, S as processRouteTree, Q as processRouteMasks, Z as resolvePath, d as cleanPath, a3 as trimPathRight, P as parseHref, q as executeRewriteInput, B as isDangerousProtocol, U as redirect, u as findSingleMatch, l as deepEqual, D as DEFAULT_PROTOCOL_ALLOWLIST, c as buildRouteBranch, z as interpolatePath, N as nullReplaceEqualDeep, W as replaceEqualDeep$1, L as last, k as decodePath, s as findFlatMatch, t as findRouteMatch, y as hasKeys, r as executeRewriteOutput, n as encodePathLikeUrl, a2 as trimPathLeft, J as joinPaths, a5 as useRouter, m as dummyMatchContext, M as matchContext, x as getDefaultExportFromCjs, X as requireReactDom, p as exactPathTest, V as removeTrailingSlash, R as React, K as jsxRuntimeExports, E as isModuleNotFoundError, a4 as useHydrated, o as escapeHtml, C as isInlinableStylesheet, w as getAssetCrossOrigin, Y as resolveManifestAssetLink, O as Outlet, a as React$1 } from "./server-C9gJz6Km.js";
+import { T as reactExports, v as functionalUpdate$1, b as arraysEqual, i as createLRUCache, G as isPromise, H as isRedirect, F as isNotFound, A as invariant, h as createControlledPromise, $ as rootRouteId, I as isServer$1, f as compileDecodeCharMap, a1 as trimPath, _ as rewriteBasepath, g as composeRewrites, S as processRouteTree, Q as processRouteMasks, Z as resolvePath, d as cleanPath, a3 as trimPathRight, P as parseHref, q as executeRewriteInput, B as isDangerousProtocol, U as redirect, u as findSingleMatch, l as deepEqual, D as DEFAULT_PROTOCOL_ALLOWLIST, c as buildRouteBranch, z as interpolatePath, N as nullReplaceEqualDeep, W as replaceEqualDeep$1, L as last, k as decodePath, s as findFlatMatch, t as findRouteMatch, y as hasKeys, r as executeRewriteOutput, n as encodePathLikeUrl, a2 as trimPathLeft, J as joinPaths, a5 as useRouter, m as dummyMatchContext, M as matchContext, x as getDefaultExportFromCjs, X as requireReactDom, p as exactPathTest, V as removeTrailingSlash, R as React, K as jsxRuntimeExports, E as isModuleNotFoundError, a4 as useHydrated, o as escapeHtml, C as isInlinableStylesheet, w as getAssetCrossOrigin, Y as resolveManifestAssetLink, O as Outlet, a as React$1 } from "./server-Ct2nw_Uh.js";
 var reactUse = reactExports.use;
 function useForwardedRef(ref) {
   const innerRef = reactExports.useRef(null);
@@ -4669,7 +4669,7 @@ var QueryClientProvider = ({
   }, [client]);
   return /* @__PURE__ */ jsxRuntimeExports.jsx(QueryClientContext.Provider, { value: client, children });
 };
-const appCss = "/assets/styles-CbZy9_AS.css";
+const appCss = "/assets/styles-B3VqdEtE.css";
 const mergeClasses = (...classes) => classes.filter((className, index, array) => {
   return Boolean(className) && className.trim() !== "" && array.indexOf(className) === index;
 }).join(" ").trim();
@@ -5306,9 +5306,6 @@ function useAppContext() {
   }
   return context;
 }
-function hasAnyRole(role, allowed) {
-  return role != null && allowed.includes(role);
-}
 const categoryMeta = {
   sensitive_data: { label: "Sensitive Data", color: "var(--color-severity-critical)" },
   open_directory: { label: "Open Directory", color: "var(--color-severity-medium)" },
@@ -5848,7 +5845,7 @@ function RootLayout() {
     /* @__PURE__ */ jsxRuntimeExports.jsx(SiteFooter, {})
   ] });
 }
-const $$splitComponentImporter$4 = () => import("./submit-DmG7t6lr.js");
+const $$splitComponentImporter$4 = () => import("./submit-CeJM2aWg.js");
 const Route$4 = createFileRoute("/submit")({
   head: () => ({
     meta: [{
@@ -5860,7 +5857,7 @@ const Route$4 = createFileRoute("/submit")({
   }),
   component: lazyRouteComponent($$splitComponentImporter$4, "component")
 });
-const $$splitComponentImporter$3 = () => import("./exposures-B6tTo2My.js");
+const $$splitComponentImporter$3 = () => import("./exposures-D7epKLQT.js");
 const Route$3 = createFileRoute("/exposures")({
   head: () => ({
     meta: [{
@@ -5872,7 +5869,7 @@ const Route$3 = createFileRoute("/exposures")({
   }),
   component: lazyRouteComponent($$splitComponentImporter$3, "component")
 });
-const $$splitComponentImporter$2 = () => import("./ethics-asEPrGS9.js");
+const $$splitComponentImporter$2 = () => import("./ethics-CxACA-bX.js");
 const Route$2 = createFileRoute("/ethics")({
   head: () => ({
     meta: [{
@@ -11260,7 +11257,7 @@ const DialogDescription = reactExports.forwardRef(({ className, ...props }, ref)
   }
 ));
 DialogDescription.displayName = Description.displayName;
-const $$splitComponentImporter$1 = () => import("./dashboard-C1pCzGxe.js");
+const $$splitComponentImporter$1 = () => import("./dashboard-ALYGdP-E.js");
 const Route$1 = createFileRoute("/dashboard")({
   head: () => ({
     meta: [{
@@ -11278,7 +11275,7 @@ const Route$1 = createFileRoute("/dashboard")({
   }),
   component: lazyRouteComponent($$splitComponentImporter$1, "component")
 });
-const $$splitComponentImporter = () => import("./index-77f01XjW.js");
+const $$splitComponentImporter = () => import("./index-CEMhDxEp.js");
 const Route2 = createFileRoute("/")({
   head: () => ({
     meta: [{
@@ -11338,8 +11335,7 @@ const router = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProper
   getRouter
 }, Symbol.toStringTag, { value: "Module" }));
 export {
-  useAppContext as A,
-  useNavigate as B,
+  useNavigate as A,
   Dialog as D,
   Link as L,
   Mail as M,
@@ -11361,15 +11357,15 @@ export {
   formatFullDate as m,
   formatShortDate as n,
   getExposurePublicTitle as o,
-  hasAnyRole as p,
-  isDomainClaimed as q,
-  isExposureLockedForOwner as r,
-  isExposureVisibleToPublic as s,
-  penTesterMutedClass as t,
-  roleMeta as u,
-  rolePermissions as v,
-  router as w,
-  severityMeta as x,
-  siteContact as y,
-  sortBySeverity as z
+  isDomainClaimed as p,
+  isExposureLockedForOwner as q,
+  isExposureVisibleToPublic as r,
+  penTesterMutedClass as s,
+  roleMeta as t,
+  rolePermissions as u,
+  router as v,
+  severityMeta as w,
+  siteContact as x,
+  sortBySeverity as y,
+  useAppContext as z
 };

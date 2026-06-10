@@ -1,9 +1,8 @@
-import { R as React, x as getDefaultExportFromCjs, T as reactExports, K as jsxRuntimeExports } from "./server-C9gJz6Km.js";
-import { k as createLucideIcon, j as clsx, A as useAppContext, z as sortBySeverity, s as isExposureVisibleToPublic, i as categoryMeta, R as RoleBadge, L as Link, u as roleMeta, v as rolePermissions, o as getExposurePublicTitle, m as formatFullDate, y as siteContact, M as Mail, g as Phone } from "./router-C93ZM2wV.js";
-import { S as SeverityPill } from "./SeverityPill-CD6_Ivlc.js";
-import { U as UserRoundCheck, L as Lock } from "./user-round-check-OBVn_xeA.js";
-import { S as ShieldCheck } from "./shield-check-CUGRV8_x.js";
-import { i as filterProps, z as require_baseExtremum, E as require_baseGt, F as require_baseIteratee, H as require_baseLt, u as isFunction, T as Text, y as polarToCartesian, f as Layer, q as getTickClassName, h as adaptEventsOfChild, L as Label, D as Dot, d as Curve, v as isNil, r as getValueByDataKey, S as Shape, A as Animate, n as get, s as interpolateNumber, t as isEqual, w as isNumber, e as LabelList, I as uniqueId, G as Global, x as mathSign, j as findAllByType, c as Cell, o as getMaxRadius, p as getPercentValue, J as warn, m as generateCategoricalChart, l as formatAxisMap, R as ResponsiveContainer, b as AreaChart, C as CartesianGrid, X as XAxis, Y as YAxis, g as Tooltip, a as Area } from "./AreaChart-Bno5RNoJ.js";
+import { R as React, x as getDefaultExportFromCjs, T as reactExports, K as jsxRuntimeExports } from "./server-Ct2nw_Uh.js";
+import { k as createLucideIcon, j as clsx, z as useAppContext, y as sortBySeverity, r as isExposureVisibleToPublic, i as categoryMeta, R as RoleBadge, L as Link, t as roleMeta, u as rolePermissions, m as formatFullDate, x as siteContact, M as Mail, g as Phone } from "./router-Vt4IcVQn.js";
+import { U as UserRoundCheck, L as Lock } from "./user-round-check-CtVD9FIB.js";
+import { S as ShieldCheck } from "./shield-check-Br7lrIK_.js";
+import { i as filterProps, z as require_baseExtremum, E as require_baseGt, F as require_baseIteratee, H as require_baseLt, u as isFunction, T as Text, y as polarToCartesian, f as Layer, q as getTickClassName, h as adaptEventsOfChild, L as Label, D as Dot, d as Curve, v as isNil, r as getValueByDataKey, S as Shape, A as Animate, n as get, s as interpolateNumber, t as isEqual, w as isNumber, e as LabelList, I as uniqueId, G as Global, x as mathSign, j as findAllByType, c as Cell, o as getMaxRadius, p as getPercentValue, J as warn, m as generateCategoricalChart, l as formatAxisMap, R as ResponsiveContainer, b as AreaChart, C as CartesianGrid, X as XAxis, Y as YAxis, g as Tooltip, a as Area } from "./AreaChart-B0f4JJuB.js";
 import "node:async_hooks";
 import "node:stream";
 import "node:stream/web";
@@ -1604,17 +1603,12 @@ function HomePage() {
         /* @__PURE__ */ jsxRuntimeExports.jsx(Link, { to: "/exposures", className: "text-sm font-medium text-primary", children: "View all listings" })
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3", children: recentExposures.map((exposure) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "panel p-5", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start justify-between gap-4", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground", children: exposure.id }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-2 text-base font-medium", children: exposure.domain }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-sm text-muted-foreground", children: exposure.companyName })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(SeverityPill, { severity: exposure.severity })
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground", children: exposure.id }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-2 text-base font-medium", children: exposure.domain }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-sm text-muted-foreground", children: exposure.companyName })
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-4 inline-flex rounded-full border border-border px-2.5 py-1 mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground", children: categoryMeta[exposure.category].label }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h4", { className: "mt-4 text-sm font-semibold text-foreground", children: getExposurePublicTitle(exposure) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-3 text-xs text-muted-foreground", children: "Evidence and remediation guidance are private until ownership is verified." }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-4 text-xs text-muted-foreground", children: "Evidence and remediation guidance are private until ownership is verified." }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-4 flex items-center justify-between border-t border-border/70 pt-3 text-xs text-muted-foreground", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
             "Seen ",

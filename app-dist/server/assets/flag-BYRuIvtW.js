@@ -1,4 +1,4 @@
-import { k as createLucideIcon } from "./router-C93ZM2wV.js";
+import { k as createLucideIcon } from "./router-Vt4IcVQn.js";
 const __iconNode = [
   [
     "path",

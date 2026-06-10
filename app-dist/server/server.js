@@ -53,7 +53,7 @@ function renderErrorPage() {
 let serverEntryPromise;
 async function getServerEntry() {
   if (!serverEntryPromise) {
-    serverEntryPromise = import("./assets/server-C9gJz6Km.js").then((n) => n.a0).then(
+    serverEntryPromise = import("./assets/server-Ct2nw_Uh.js").then((n) => n.a0).then(
       (m) => m.default ?? m
     );
   }
